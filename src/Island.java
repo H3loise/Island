@@ -71,6 +71,43 @@ public static final int tailleGrille=6;
                 innondables.add(c);
             }
         }
+        int nbFeu=2;
+        int nbEau=2;
+        int nbTerre=2;
+        int nbAir=2;
+        int helico=1;
+        Random random = new Random();
+        while(nbFeu!=0 || nbEau!=0 || nbTerre!=0 || nbAir!=0 || helico!=0){
+            int valx=random.nextInt(tailleGrille);
+            int valy=random.nextInt(tailleGrille);
+            if(nbFeu>0 && this.getCase(valx,valy).special.equals("None")){
+                this.getCase(valx,valy).setSpecial("Feu");
+                nbFeu--;
+            }else{
+                if(nbEau>0 && this.getCase(valx,valy).special.equals("None")){
+                    this.getCase(valx,valy).setSpecial("Eau");
+                    nbEau--;
+                }else{
+                    if(nbTerre>0 && this.getCase(valx,valy).special.equals("None")){
+                        this.getCase(valx,valy).setSpecial("Terre");
+                        nbTerre--;
+                    }
+                    else{
+                        if (nbAir>0 && this.getCase(valx,valy).special.equals("None")){
+                            this.getCase(valx,valy).setSpecial("Air");
+                            nbAir--;
+                        }
+                        else{
+                            if(helico>0 && this.getCase(valx,valy).special.equals("None")){
+                                this.getCase(valx,valy).setSpecial("Helico");
+                                helico--;
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
     }
 
     public void innonde(){
@@ -126,7 +163,7 @@ public static final int tailleGrille=6;
                 }
             }
         }
-        System.out.println(this.playerRound.nom);
+       // System.out.println(this.playerRound.nom);
         notifyObservers();
     }
 
@@ -169,12 +206,18 @@ class Case{
     private Modele modele;
     private int etat;
     private final int x,y;
+    String special;
     
     public Case(Modele modele, int x, int y){
         this.modele=modele;
         this.etat=0;
         this.x=x;
         this.y=y;
+        this.special=new String("None");
+    }
+
+    public void setSpecial(String s){
+        this.special=s;
     }
 
     public int getEtat(){
@@ -275,6 +318,26 @@ class VueCarte extends JPanel implements Observer{
                 break;
         }
         g.fillRect(x,y,Taille,Taille);
+        if(!c.special.equals("None")) {
+            switch (c.special) {
+                case "Feu":
+                    g.setColor(Color.RED);
+                    break;
+                case "Eau":
+                    g.setColor(Color.BLUE);
+                    break;
+                case "Terre":
+                    g.setColor(Color.GREEN);
+                    break;
+                case "Air":
+                    g.setColor(Color.LIGHT_GRAY);
+                    break;
+                case "Helico":
+                    g.setColor(Color.BLACK);
+                    break;
+            }g.fillRect(x, y, Taille / 4, Taille / 4);
+        }
+
         if(c.getX()==this.modele.p1.x && c.getY()==this.modele.p1.y){
             g.setColor(Color.YELLOW);
             g.fillOval(x,y,Taille,Taille);
@@ -307,8 +370,29 @@ class VueCarte extends JPanel implements Observer{
                     g.fillRect(260+40+i*25,45,20,20);
                     break;
                 case "Air":
-                    g.setColor(Color.CYAN);
+                    g.setColor(Color.LIGHT_GRAY);
                     g.fillRect(260+40+i*25,45,20,20);
+                    break;
+            }
+        }g.setColor(Color.BLACK);
+        g.drawString("artefact :",260,80);
+        for(int i = 0; i<this.modele.playerRound.inventaireArtefact.size(); i++){
+            switch(this.modele.playerRound.inventaireArtefact.get(i).type){
+                case "Feu":
+                    g.setColor(Color.RED);
+                    g.fillRect(260+60+i*25,75,20,20);
+                    break;
+                case "Eau":
+                    g.setColor(Color.BLUE);
+                    g.fillRect(260+60+i*25,75,20,20);
+                    break;
+                case "Terre":
+                    g.setColor(Color.GREEN);
+                    g.fillRect(260+60+i*25,75,20,20);
+                    break;
+                case "Air":
+                    g.setColor(Color.LIGHT_GRAY);
+                    g.fillRect(260+60+i*25,75,20,20);
                     break;
             }
         }
@@ -380,7 +464,7 @@ class Controleur implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent e){
-        System.out.println("nombre de coups restant : "+this.modele.playerRound.nbLeft);
+        //System.out.println("nombre de coups restant : "+this.modele.playerRound.nbLeft);
         if(e.getActionCommand().equals("Assecher")){
             this.assecher=true;
             this.modele.playerRound.nbLeft++;
@@ -431,6 +515,15 @@ class Controleur implements ActionListener {
             if(e.getActionCommand().equals("Cle")){
                 this.modele.getCle();
             }
+            if(e.getActionCommand().equals("Artefact")){
+                System.out.println(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).special);
+                if(this.modele.playerRound.isInKeys(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).special)){
+                    this.modele.playerRound.getArtefact(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).special);
+                }else{
+                    //System.out.println("artefact ");
+                    this.modele.playerRound.nbLeft++;
+                }
+            }
             modele.playerRound.removeLeft();
         }else{
             if (e.getActionCommand().equals("fin de tour")) {
@@ -463,6 +556,26 @@ class Player{
 
     public void removeLeft(){
         this.nbLeft--;
+    }
+
+    public boolean isInKeys(String type){
+        for(int i=0;i<this.inventaireCle.size();i++){
+            if(this.inventaireCle.get(i).type.equals(type)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    public void getArtefact(String type){
+        int index=-1;
+        for(int i=0;i<this.inventaireCle.size();i++){
+            if(this.inventaireCle.get(i).type.equals(type)){
+                index=i;
+            }
+        }this.inventaireCle.remove(index);
+        this.addArtefact(new Artefact(type));
     }
 
     /**public ArrayList<Case> Dryable(){
@@ -503,8 +616,6 @@ class Artefact{
     public Artefact(String type){
         this.type=type;
     }
-
-
 }
 
 class Cle{
