@@ -107,7 +107,7 @@ public static final int tailleGrille=6;
 
 
     public void moveRight(){
-        if(this.playerRound.x<tailleGrille-1 && this.getCase(this.playerRound.x,this.playerRound.y).getEtat()!=2){
+        if(this.playerRound.x<tailleGrille-1 && this.getCase(this.playerRound.x+1,this.playerRound.y).getEtat()!=2){
             playerRound.x+=1;
         }else {
             playerRound.nbLeft++;
@@ -290,6 +290,9 @@ class VueCommandes extends JPanel{
         JButton down = new JButton("u");
         this.add(down);
         down.addActionListener(ctrl);
+        JButton here = new JButton("here");
+        this.add(here);
+        here.addActionListener(ctrl);
         JButton assecher= new JButton("Assecher");
         this.add(assecher);
         assecher.addActionListener(ctrl);
@@ -339,6 +342,16 @@ class Controleur implements ActionListener {
                     modele.moveRight();
                 }
             }
+
+            if(e.getActionCommand().equals("here")){
+                if(assecher && this.modele.playerRound.Dryable(this.modele.playerRound.x,this.modele.playerRound.y)){
+                    this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).seche();
+                    this.assecher=false;
+                }else{
+                    this.modele.playerRound.nbLeft++;
+                }
+            }
+
             if (e.getActionCommand().equals("<")) {
                 if(assecher && this.modele.playerRound.Dryable(this.modele.playerRound.x-1,this.modele.playerRound.y)){
                     this.modele.getCase(this.modele.playerRound.x-1,this.modele.playerRound.y).seche();
