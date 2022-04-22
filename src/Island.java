@@ -87,6 +87,31 @@ public static final int tailleGrille=6;
 
     }
 
+    public void getCle(){
+        Random random=new Random();
+        int nb= random.nextInt(3);
+        switch(nb){
+            case 1:
+                this.getCase(this.playerRound.x,this.playerRound.y).prendLeau();
+                break;
+            case 2:
+                int numbArtefact = random.nextInt(4);
+                switch (numbArtefact){
+                    case 0:
+                        this.playerRound.addCle(new Cle("Feu"));
+                        break;
+                    case 1:
+                        this.playerRound.addCle(new Cle("Eau"));
+                        break;
+                    case 2:
+                        this.playerRound.addCle(new Cle("Terre"));
+                        break;
+                    case 3:
+                        this.playerRound.addCle(new Cle("Air"));
+                }
+        }notifyObservers();
+    }
+
     public void changePlayerRound(){
         if(playerRound.equals(p1)){
             this.playerRound=p2;
@@ -220,7 +245,7 @@ class VueCarte extends JPanel implements Observer{
         this.modele=modele;
         modele.addObserver(this);
         //this.setPreferredSize(Taille*Modele.tailleGrille,Taille*Modele.tailleGrille);
-        Dimension d = new Dimension(350,350);
+        Dimension d = new Dimension(450,450);
         this.setPreferredSize(d);
     }
     
@@ -266,6 +291,27 @@ class VueCarte extends JPanel implements Observer{
         g.setColor(Color.BLACK);
         g.drawString(this.modele.playerRound.nom,260,20);
         g.drawString("move left :"+this.modele.playerRound.nbLeft,260,40);
+        g.drawString("clés : ",260,60);
+        for(int i = 0; i<this.modele.playerRound.inventaireCle.size(); i++){
+            switch(this.modele.playerRound.inventaireCle.get(i).type){
+                case "Feu":
+                    g.setColor(Color.RED);
+                    g.fillRect(260+40+i*25,45,20,20);
+                    break;
+                case "Eau":
+                    g.setColor(Color.BLUE);
+                    g.fillRect(260+40+i*25,45,20,20);
+                    break;
+                case "Terre":
+                    g.setColor(Color.GREEN);
+                    g.fillRect(260+40+i*25,45,20,20);
+                    break;
+                case "Air":
+                    g.setColor(Color.CYAN);
+                    g.fillRect(260+40+i*25,45,20,20);
+                    break;
+            }
+        }
     }
 }
 
@@ -296,6 +342,12 @@ class VueCommandes extends JPanel{
         JButton assecher= new JButton("Assecher");
         this.add(assecher);
         assecher.addActionListener(ctrl);
+        JButton artefact = new JButton("Artefact");
+        this.add(artefact);
+        artefact.addActionListener(ctrl);
+        JButton cle = new JButton("Cle");
+        this.add(cle);
+        cle.addActionListener(ctrl);
 
     }
 }
@@ -376,9 +428,13 @@ class Controleur implements ActionListener {
                     modele.moveDown();
                 }
             }
+            if(e.getActionCommand().equals("Cle")){
+                this.modele.getCle();
+            }
             modele.playerRound.removeLeft();
         }else{
             if (e.getActionCommand().equals("fin de tour")) {
+                this.modele.getCle();
                 this.modele.innonde();
                 this.modele.playerRound.nbLeft=3;
                 this.modele.changePlayerRound();
@@ -393,12 +449,16 @@ class Player{
     int y;
     String nom;
     int nbLeft;
+    ArrayList<Artefact> inventaireArtefact;
+    ArrayList<Cle> inventaireCle;
     public Player(int x, int y, String nom, Modele modele){
         this.modele=modele;
         this.x=x;
         this.y=y;
         this.nbLeft=3;
         this.nom=nom;
+        this.inventaireArtefact =new ArrayList<>();
+        this.inventaireCle = new ArrayList<>();
     }
 
     public void removeLeft(){
@@ -426,4 +486,31 @@ class Player{
         return (x>=0 && y>=0 && x<this.modele.tailleGrille && y<this.modele.tailleGrille && this.modele.getCase(x,y).canBeDried());
     }
 
+    public void addArtefact(Artefact a){
+        this.inventaireArtefact.add(a);
+    }
+
+    public void addCle(Cle c){
+        this.inventaireCle.add(c);
+    }
+
+
+}
+
+class Artefact{
+    String type;
+
+    public Artefact(String type){
+        this.type=type;
+    }
+
+
+}
+
+class Cle{
+    String type;
+
+    public Cle(String type){
+        this.type=type;
+    }
 }
