@@ -1,10 +1,11 @@
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.Scanner;
 
 interface Observer {
 
@@ -193,7 +194,7 @@ public static final int tailleGrille=6;
 
     public void getCle(){
         Random random=new Random();
-        int nb= random.nextInt(3);
+        int nb= random.nextInt(4);
         switch(nb){
             case 1:
                 this.getCase(this.playerRound.x,this.playerRound.y).prendLeau();
@@ -212,7 +213,21 @@ public static final int tailleGrille=6;
                         break;
                     case 3:
                         this.playerRound.addCle(new Cle("Air"));
+                        break;
                 }
+                break;
+            case 3:
+                int numbAS = random.nextInt(2);
+                switch (numbAS) {
+                    case 0:
+                        this.playerRound.addActionSpe(new ActionSpe("Helico"));
+                        break;
+                    case 1:
+                        this.playerRound.addActionSpe(new ActionSpe("Sable"));
+                        break;
+                }
+                break;
+
         }notifyObservers();
     }
 
@@ -483,6 +498,18 @@ class VueCarte extends JPanel implements Observer{
                         g.fillRect(260 + 60 + i * 25, 70, 20, 20);
                         break;
                 }
+            }g.drawString("inventaire :",260,100);
+            for (int i = 0; i < this.modele.playerRound.inventaireActionSpe.size(); i++) {
+                switch (this.modele.playerRound.inventaireActionSpe.get(i).type){
+                    case "Helico":
+                        g.setColor(Color.BLACK);
+                        g.fillRect(260+80+i*25,90,20,20);
+                        break;
+                    case "Sable":
+                        g.setColor(Color.YELLOW);
+                        g.fillRect(260+80+i*25,90,20,20);
+                        break;
+                }
             }
         }
     }
@@ -493,6 +520,8 @@ class VueCommandes extends JPanel{
 
     public VueCommandes(Modele modele){
         this.modele=modele;
+        Dimension d = new Dimension(450,450);
+        this.setPreferredSize(d);
         JButton buttonAvance = new JButton("fin de tour");
         this.add(buttonAvance);
         Controleur ctrl = new Controleur(modele);
@@ -633,6 +662,7 @@ class Player{
     int nbLeft;
     ArrayList<Artefact> inventaireArtefact;
     ArrayList<Cle> inventaireCle;
+    ArrayList<ActionSpe> inventaireActionSpe;
     public Player(int x, int y, String nom, Modele modele){
         this.modele=modele;
         this.x=x;
@@ -641,6 +671,7 @@ class Player{
         this.nom=nom;
         this.inventaireArtefact =new ArrayList<>();
         this.inventaireCle = new ArrayList<>();
+        this.inventaireActionSpe = new ArrayList<>();
     }
 
     public void removeLeft(){
@@ -696,6 +727,10 @@ class Player{
         this.inventaireCle.add(c);
     }
 
+    public void addActionSpe(ActionSpe as){
+        this.inventaireActionSpe.add(as);
+    }
+
 }
 
 class Artefact{
@@ -713,6 +748,15 @@ class Cle{
         this.type=type;
     }
 }
+
+class ActionSpe{
+    String type;
+
+    public ActionSpe(String type){
+        this.type=type;
+    }
+}
+
 
 class Parametre implements ActionListener{
     int nbJoueurs;
@@ -767,6 +811,7 @@ class Parametre implements ActionListener{
             System.out.println("boucle");
         }// boucle pour empecher le jeux de se lancer si nb players <2
 
+
     }
 
     @Override
@@ -785,7 +830,5 @@ class Parametre implements ActionListener{
                 names.add(field4.getText());
             }
         }
-
-
     }
 }
