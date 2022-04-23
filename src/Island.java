@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 interface Observer {
 
@@ -32,9 +33,12 @@ public class Island {
 
     public static void main(String[] args) {
 
-    EventQueue.invokeLater(() -> {
+        Parametre p =new Parametre();
 
-                Modele modele = new Modele();
+
+        Parametre finalP = p;
+        EventQueue.invokeLater(() -> {
+                Modele modele = new Modele(finalP.names);
                 Vue vue = new Vue(modele);
         });
     }
@@ -48,22 +52,42 @@ public static final int tailleGrille=6;
 
     private Case[][] cases;
     ArrayList<Case> innondables;
-    Player p1;
-    Player p2;
-    Player p3;
-    Player p4;
+    //Player p1;
+    //Player p2;
+    //Player p3;
+    //Player p4;
     Player playerRound;
+    int xHelico;
+    int yHelico;
+    ArrayList<Player> players;
 
-    public Modele(){
+    public Modele(ArrayList<String> names){
         cases=new Case[tailleGrille][tailleGrille];
         innondables=new ArrayList<>();
+        players = new ArrayList<>();
+        for(int i=0;i<names.size();i++){
+            switch (i){
+                case 0:
+                    players.add(new Player(0,0,names.get(i),this));
+                    break;
+                case 1:
+                    players.add(new Player(5,0,names.get(i),this));
+                    break;
+                case 2:
+                    players.add(new Player(5,5,names.get(i),this));
+                    break;
+                case 3:
+                    players.add(new Player(0,5,names.get(i),this));
+                    break;
+            }
+        }
         String nomp1=new String("Player1");
         String nom2= new String("Player2");
-        p1=new Player(0,0,nomp1,this);
-        p2=new Player(5,5,nom2,this);
-        p3=new Player(5,0,"Player 3",this);
-        p4=new Player(0,5,"Player 4",this);
-        playerRound=p1;
+        //p1=new Player(0,0,nomp1,this);
+        //p2=new Player(5,5,nom2,this);
+        //p3=new Player(5,0,"Player 3",this);
+        //p4=new Player(0,5,"Player 4",this);
+        playerRound=players.get(0);
         for(int i=0;i<tailleGrille;i++){
             for(int j=0;j<tailleGrille;j++) {
                 Case c = new Case(this, i, j);
@@ -101,6 +125,8 @@ public static final int tailleGrille=6;
                             if(helico>0 && this.getCase(valx,valy).special.equals("None")){
                                 this.getCase(valx,valy).setSpecial("Helico");
                                 helico--;
+                                this.xHelico=valx;
+                                this.yHelico=valy;
                             }
                         }
                     }
@@ -108,6 +134,39 @@ public static final int tailleGrille=6;
             }
 
         }
+    }
+
+
+    public boolean won(){
+        for(int i=1;i<this.players.size();i++){
+            if(players.get(i).x!=players.get(i-1).x || players.get(i).y!=players.get(i-1).y){
+                return false;
+            }
+        }
+            int feu = 0;
+            int eau = 0;
+            int terre = 0;
+            int air = 0;
+            for(int i=0;i<players.size();i++){
+                for(int e=0;e<players.get(i).inventaireArtefact.size();e++){
+                    if(players.get(i).inventaireArtefact.get(e).type.equals("Feu")){
+                        feu++;
+                    }
+                    if(players.get(i).inventaireArtefact.get(e).type.equals("Eau")){
+                        eau++;
+                    }
+                    if(players.get(i).inventaireArtefact.get(e).type.equals("Terre")){
+                        terre++;
+                    }
+                    if(players.get(i).inventaireArtefact.get(e).type.equals("Air")){
+                        air++;
+                    }
+                }
+            }
+            if(feu>0 && eau>0 && terre>0 && air>0){
+                return true;
+            }
+        return false;
     }
 
     public void innonde(){
@@ -150,16 +209,24 @@ public static final int tailleGrille=6;
     }
 
     public void changePlayerRound(){
-        if(playerRound.equals(p1)){
-            this.playerRound=p2;
+        if(playerRound.equals(this.players.get(0))){
+            this.playerRound=this.players.get(1);
         }else {
-            if (playerRound.equals(p2)) {
-                this.playerRound = p3;
-            }else{
-                if(playerRound.equals(p3)){
-                    this.playerRound=p4;
+            if (playerRound.equals(this.players.get(1))) {
+                if(this.players.size()>2) {
+                    this.playerRound = players.get(2);
                 }else{
-                    this.playerRound=p1;
+                    this.playerRound=players.get(0);
+                }
+            }else{
+                if(playerRound.equals(players.get(2))){
+                    if(players.size()>3) {
+                        this.playerRound = players.get(3);
+                    }else{
+                        this.playerRound=players.get(0);
+                    }
+                }else{
+                    this.playerRound=players.get(0);
                 }
             }
         }
@@ -338,18 +405,22 @@ class VueCarte extends JPanel implements Observer{
             }g.fillRect(x, y, Taille / 4, Taille / 4);
         }
 
-        if(c.getX()==this.modele.p1.x && c.getY()==this.modele.p1.y){
+        if(c.getX()==this.modele.players.get(0).x && c.getY()==this.modele.players.get(0).y){
             g.setColor(Color.YELLOW);
             g.fillOval(x,y,Taille,Taille);
-        }if(c.getX()==this.modele.p2.x && c.getY()==this.modele.p2.y){
+        }if(c.getX()==this.modele.players.get(1).x && c.getY()==this.modele.players.get(1).y){
             g.setColor(Color.RED);
             g.fillOval(x,y,Taille,Taille);
-        }if(c.getX()==this.modele.p3.x && c.getY()==this.modele.p3.y){
-            g.setColor(Color.GREEN);
-            g.fillOval(x,y,Taille,Taille);
-        }if(c.getX()==this.modele.p4.x && c.getY()==this.modele.p4.y){
-            g.setColor(Color.MAGENTA);
-            g.fillOval(x,y,Taille,Taille);
+        }if(this.modele.players.size()>2){
+            if(c.getX()==this.modele.players.get(2).x && c.getY()==this.modele.players.get(2).y) {
+                g.setColor(Color.GREEN);
+                g.fillOval(x, y, Taille, Taille);
+            }
+        }if(this.modele.players.size()>3){
+            if(c.getX()==this.modele.players.get(3).x && c.getY()==this.modele.players.get(3).y){
+                g.setColor(Color.MAGENTA);
+                g.fillOval(x,y,Taille,Taille);
+            }
         }
         g.setColor(Color.BLACK);
         g.drawString(this.modele.playerRound.nom,260,20);
@@ -380,19 +451,19 @@ class VueCarte extends JPanel implements Observer{
             switch(this.modele.playerRound.inventaireArtefact.get(i).type){
                 case "Feu":
                     g.setColor(Color.RED);
-                    g.fillRect(260+60+i*25,75,20,20);
+                    g.fillRect(260+60+i*25,70,20,20);
                     break;
                 case "Eau":
                     g.setColor(Color.BLUE);
-                    g.fillRect(260+60+i*25,75,20,20);
+                    g.fillRect(260+60+i*25,70,20,20);
                     break;
                 case "Terre":
                     g.setColor(Color.GREEN);
-                    g.fillRect(260+60+i*25,75,20,20);
+                    g.fillRect(260+60+i*25,70,20,20);
                     break;
                 case "Air":
                     g.setColor(Color.LIGHT_GRAY);
-                    g.fillRect(260+60+i*25,75,20,20);
+                    g.fillRect(260+60+i*25,70,20,20);
                     break;
             }
         }
@@ -607,7 +678,6 @@ class Player{
         this.inventaireCle.add(c);
     }
 
-
 }
 
 class Artefact{
@@ -623,5 +693,78 @@ class Cle{
 
     public Cle(String type){
         this.type=type;
+    }
+}
+
+class Parametre implements ActionListener{
+    int nbJoueurs;
+    ArrayList<String> names;
+    JTextField field1;
+    JTextField field2;
+    JTextField field3;
+    JTextField field4;
+
+
+    public Parametre(){
+        /**
+         * JFrame framParam = new JFrame("Parameters");
+        framParam.setSize(new Dimension(400,120));
+        JLabel labelNb= new JLabel("Nombre de joueurs : ");
+        framParam.add(labelNb);
+        fieldNbPlayers=new JTextField(20);
+        framParam.add(fieldNbPlayers);
+        JButton suivantNbPlayers=new JButton("Next");
+        framParam.add(suivantNbPlayers);
+        framParam.setLayout(new FlowLayout());
+        suivantNbPlayers.addActionListener(this);
+        framParam.setVisible(true);
+         **/
+        names=new ArrayList<>();
+        JFrame framParam = new JFrame("Parameters");
+        framParam.setSize(new Dimension(400,200));
+        JLabel label1= new JLabel("Nom player 1");
+        JLabel labe2= new JLabel("Nom player 2");
+        JLabel label3= new JLabel("Nom player 3");
+        JLabel label4= new JLabel("Nom player 4");
+        framParam.add(label1);
+        field1=new JTextField(20);
+        field2=new JTextField(20);
+        field3=new JTextField(20);
+        field4=new JTextField(20);
+        framParam.add(field1);
+        framParam.add(labe2);
+        framParam.add(field2);
+        framParam.add(label3);
+        framParam.add(field3);
+        framParam.add(label4);
+        framParam.add(field4);
+        JButton suivantNbPlayers=new JButton("Finish");
+        framParam.add(suivantNbPlayers);
+        framParam.setLayout(new FlowLayout());
+        suivantNbPlayers.addActionListener(this);
+        framParam.setVisible(true);
+        while(names.size()<2){
+            // boucle pour empecher le jeux de se lancer si nb players <2
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        names.clear();
+        if(e.getActionCommand().equals("Finish")){
+            if(!field1.getText().equals("")) {
+                names.add(field1.getText());
+            }if(!field2.getText().equals("")) {
+                names.add(field2.getText());
+            }
+            if(!field3.getText().equals("")){
+                names.add(field3.getText());
+            }
+            if(!field4.getText().equals("")){
+                names.add(field4.getText());
+            }
+        }
+
+
     }
 }
