@@ -69,15 +69,19 @@ public static final int tailleGrille=6;
             switch (i){
                 case 0:
                     players.add(new Player(0,0,names.get(i),this));
+                    //players.get(0).inventaireArtefact.add(new Artefact("Feu"));
                     break;
                 case 1:
                     players.add(new Player(5,0,names.get(i),this));
+                    //players.get(1).inventaireArtefact.add(new Artefact("Eau"));
                     break;
                 case 2:
                     players.add(new Player(5,5,names.get(i),this));
+                    //players.get(2).inventaireArtefact.add(new Artefact("Terre"));
                     break;
                 case 3:
                     players.add(new Player(0,5,names.get(i),this));
+                    //players.get(3).inventaireArtefact.add(new Artefact("Air"));
                     break;
             }
         }
@@ -138,6 +142,10 @@ public static final int tailleGrille=6;
 
 
     public boolean won(){
+        if(players.get(0).x!=xHelico || players.get(0).y!=yHelico){
+            return false;
+        }
+
         for(int i=1;i<this.players.size();i++){
             if(players.get(i).x!=players.get(i-1).x || players.get(i).y!=players.get(i-1).y){
                 return false;
@@ -266,7 +274,7 @@ public static final int tailleGrille=6;
     public Case getCase (int x, int y){
         return this.cases[x][y];
     }
-            
+
 }
 
 class Case{
@@ -274,7 +282,7 @@ class Case{
     private int etat;
     private final int x,y;
     String special;
-    
+
     public Case(Modele modele, int x, int y){
         this.modele=modele;
         this.etat=0;
@@ -298,7 +306,7 @@ class Case{
     public int getY(){
         return this.y;
     }
-    
+
     public void prendLeau(){
         switch (this.etat){
             case 0:
@@ -313,7 +321,7 @@ class Case{
     public void seche(){
         this.etat=0;
     }
-    
+
     public boolean estInnondable(){
         return(this.etat==0 || this.etat==1);
     }
@@ -322,7 +330,7 @@ class Case{
         return this.etat==0 || this.etat==1;
     }
 
-    
+
 }
 
 class Vue{
@@ -330,7 +338,7 @@ class Vue{
     private VueCarte carte;
     VueCommandes commandes;
     //VueInfo info;
-    
+
     public Vue(Modele modele){
         frame=new JFrame();
         frame.setTitle("Forbidden Island");
@@ -350,7 +358,7 @@ class Vue{
 class VueCarte extends JPanel implements Observer{
     private Modele modele;
     private final static int Taille = 40;
-    
+
     public VueCarte(Modele modele){
         this.modele=modele;
         modele.addObserver(this);
@@ -358,11 +366,11 @@ class VueCarte extends JPanel implements Observer{
         Dimension d = new Dimension(450,450);
         this.setPreferredSize(d);
     }
-    
+
     public void update() {
         repaint();
     }
-    
+
     public void paintComponent(Graphics g){
         super.repaint();
         for(int i=0;i<Modele.tailleGrille;i++){
@@ -371,100 +379,110 @@ class VueCarte extends JPanel implements Observer{
             }
         }
     }
-    
-    private void paint(Graphics g, Case c, int x, int y){
-        switch(c.getEtat()){
+
+    private void paint(Graphics g, Case c, int x, int y) {
+        if (this.modele.won()) {
+            g.setColor(Color.BLACK);
+            g.drawString("Vous avez gagné ! ",225,255);
+        } else {
+            switch (c.getEtat()) {
                 case 0:
-                g.setColor(Color.WHITE);
-                break;
-                case 1:
-                g.setColor(Color.CYAN);
-                break;
-                case 2:
-                g.setColor(Color.BLUE);
-                break;
-        }
-        g.fillRect(x,y,Taille,Taille);
-        if(!c.special.equals("None")) {
-            switch (c.special) {
-                case "Feu":
-                    g.setColor(Color.RED);
+                    g.setColor(Color.WHITE);
                     break;
-                case "Eau":
+                case 1:
+                    g.setColor(Color.CYAN);
+                    break;
+                case 2:
                     g.setColor(Color.BLUE);
                     break;
-                case "Terre":
-                    g.setColor(Color.GREEN);
-                    break;
-                case "Air":
-                    g.setColor(Color.LIGHT_GRAY);
-                    break;
-                case "Helico":
-                    g.setColor(Color.BLACK);
-                    break;
-            }g.fillRect(x, y, Taille / 4, Taille / 4);
-        }
+            }
+            g.fillRect(x, y, Taille, Taille);
+            if (!c.special.equals("None")) {
+                switch (c.special) {
+                    case "Feu":
+                        g.setColor(Color.RED);
+                        break;
+                    case "Eau":
+                        g.setColor(Color.BLUE);
+                        break;
+                    case "Terre":
+                        g.setColor(Color.GREEN);
+                        break;
+                    case "Air":
+                        g.setColor(Color.LIGHT_GRAY);
+                        break;
+                    case "Helico":
+                        g.setColor(Color.BLACK);
+                        break;
+                }
+                g.fillRect(x, y, Taille / 4, Taille / 4);
+            }
 
-        if(c.getX()==this.modele.players.get(0).x && c.getY()==this.modele.players.get(0).y){
-            g.setColor(Color.YELLOW);
-            g.fillOval(x,y,Taille,Taille);
-        }if(c.getX()==this.modele.players.get(1).x && c.getY()==this.modele.players.get(1).y){
-            g.setColor(Color.RED);
-            g.fillOval(x,y,Taille,Taille);
-        }if(this.modele.players.size()>2){
-            if(c.getX()==this.modele.players.get(2).x && c.getY()==this.modele.players.get(2).y) {
-                g.setColor(Color.GREEN);
+            if (c.getX() == this.modele.players.get(0).x && c.getY() == this.modele.players.get(0).y) {
+                g.setColor(Color.YELLOW);
                 g.fillOval(x, y, Taille, Taille);
             }
-        }if(this.modele.players.size()>3){
-            if(c.getX()==this.modele.players.get(3).x && c.getY()==this.modele.players.get(3).y){
-                g.setColor(Color.MAGENTA);
-                g.fillOval(x,y,Taille,Taille);
+            if (c.getX() == this.modele.players.get(1).x && c.getY() == this.modele.players.get(1).y) {
+                g.setColor(Color.RED);
+                g.fillOval(x, y, Taille, Taille);
             }
-        }
-        g.setColor(Color.BLACK);
-        g.drawString(this.modele.playerRound.nom,260,20);
-        g.drawString("move left :"+this.modele.playerRound.nbLeft,260,40);
-        g.drawString("clés : ",260,60);
-        for(int i = 0; i<this.modele.playerRound.inventaireCle.size(); i++){
-            switch(this.modele.playerRound.inventaireCle.get(i).type){
-                case "Feu":
-                    g.setColor(Color.RED);
-                    g.fillRect(260+40+i*25,45,20,20);
-                    break;
-                case "Eau":
-                    g.setColor(Color.BLUE);
-                    g.fillRect(260+40+i*25,45,20,20);
-                    break;
-                case "Terre":
+            if (this.modele.players.size() > 2) {
+                if (c.getX() == this.modele.players.get(2).x && c.getY() == this.modele.players.get(2).y) {
                     g.setColor(Color.GREEN);
-                    g.fillRect(260+40+i*25,45,20,20);
-                    break;
-                case "Air":
-                    g.setColor(Color.LIGHT_GRAY);
-                    g.fillRect(260+40+i*25,45,20,20);
-                    break;
+                    g.fillOval(x, y, Taille, Taille);
+                }
             }
-        }g.setColor(Color.BLACK);
-        g.drawString("artefact :",260,80);
-        for(int i = 0; i<this.modele.playerRound.inventaireArtefact.size(); i++){
-            switch(this.modele.playerRound.inventaireArtefact.get(i).type){
-                case "Feu":
-                    g.setColor(Color.RED);
-                    g.fillRect(260+60+i*25,70,20,20);
-                    break;
-                case "Eau":
-                    g.setColor(Color.BLUE);
-                    g.fillRect(260+60+i*25,70,20,20);
-                    break;
-                case "Terre":
-                    g.setColor(Color.GREEN);
-                    g.fillRect(260+60+i*25,70,20,20);
-                    break;
-                case "Air":
-                    g.setColor(Color.LIGHT_GRAY);
-                    g.fillRect(260+60+i*25,70,20,20);
-                    break;
+            if (this.modele.players.size() > 3) {
+                if (c.getX() == this.modele.players.get(3).x && c.getY() == this.modele.players.get(3).y) {
+                    g.setColor(Color.MAGENTA);
+                    g.fillOval(x, y, Taille, Taille);
+                }
+            }
+            g.setColor(Color.BLACK);
+            g.drawString(this.modele.playerRound.nom, 260, 20);
+            g.drawString("move left :" + this.modele.playerRound.nbLeft, 260, 40);
+            g.drawString("clés : ", 260, 60);
+            for (int i = 0; i < this.modele.playerRound.inventaireCle.size(); i++) {
+                switch (this.modele.playerRound.inventaireCle.get(i).type) {
+                    case "Feu":
+                        g.setColor(Color.RED);
+                        g.fillRect(260 + 40 + i * 25, 45, 20, 20);
+                        break;
+                    case "Eau":
+                        g.setColor(Color.BLUE);
+                        g.fillRect(260 + 40 + i * 25, 45, 20, 20);
+                        break;
+                    case "Terre":
+                        g.setColor(Color.GREEN);
+                        g.fillRect(260 + 40 + i * 25, 45, 20, 20);
+                        break;
+                    case "Air":
+                        g.setColor(Color.LIGHT_GRAY);
+                        g.fillRect(260 + 40 + i * 25, 45, 20, 20);
+                        break;
+                }
+            }
+            g.setColor(Color.BLACK);
+            g.drawString("artefact :", 260, 80);
+            for (int i = 0; i < this.modele.playerRound.inventaireArtefact.size(); i++) {
+                switch (this.modele.playerRound.inventaireArtefact.get(i).type) {
+                    case "Feu":
+                        g.setColor(Color.RED);
+                        g.fillRect(260 + 60 + i * 25, 70, 20, 20);
+                        break;
+                    case "Eau":
+                        g.setColor(Color.BLUE);
+                        g.fillRect(260 + 60 + i * 25, 70, 20, 20);
+                        break;
+                    case "Terre":
+                        g.setColor(Color.GREEN);
+                        g.fillRect(260 + 60 + i * 25, 70, 20, 20);
+                        break;
+                    case "Air":
+                        g.setColor(Color.LIGHT_GRAY);
+                        g.fillRect(260 + 60 + i * 25, 70, 20, 20);
+                        break;
+                }
             }
         }
     }
@@ -472,7 +490,7 @@ class VueCarte extends JPanel implements Observer{
 
 class VueCommandes extends JPanel{
     private Modele modele;
-    
+
     public VueCommandes(Modele modele){
         this.modele=modele;
         JButton buttonAvance = new JButton("fin de tour");
@@ -528,7 +546,7 @@ class VueInfo extends JPanel implements Observer{
 class Controleur implements ActionListener {
     Modele modele;
     boolean assecher;
-    
+
     public Controleur(Modele modele){
         this.modele=modele;
         this.assecher=false;
@@ -587,7 +605,7 @@ class Controleur implements ActionListener {
                 this.modele.getCle();
             }
             if(e.getActionCommand().equals("Artefact")){
-                System.out.println(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).special);
+                //System.out.println(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).special);
                 if(this.modele.playerRound.isInKeys(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).special)){
                     this.modele.playerRound.getArtefact(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).special);
                 }else{
@@ -706,6 +724,7 @@ class Parametre implements ActionListener{
 
 
     public Parametre(){
+        int n;
         /**
          * JFrame framParam = new JFrame("Parameters");
         framParam.setSize(new Dimension(400,120));
@@ -743,9 +762,11 @@ class Parametre implements ActionListener{
         framParam.setLayout(new FlowLayout());
         suivantNbPlayers.addActionListener(this);
         framParam.setVisible(true);
+        System.out.println("ici");
         while(names.size()<2){
-            // boucle pour empecher le jeux de se lancer si nb players <2
-        }
+            System.out.println("boucle");
+        }// boucle pour empecher le jeux de se lancer si nb players <2
+
     }
 
     @Override
