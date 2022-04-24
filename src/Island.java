@@ -1,9 +1,12 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -50,6 +53,7 @@ public class Island {
 
 class Modele extends Observable{
 public static final int tailleGrille=6;
+Images images;
 
     private Case[][] cases;
     ArrayList<Case> innondables;
@@ -64,6 +68,7 @@ public static final int tailleGrille=6;
     boolean lost;
 
     public Modele(ArrayList<String> names){
+        images=new Images();
         cases=new Case[tailleGrille][tailleGrille];
         lost=false;
         innondables=new ArrayList<>();
@@ -299,20 +304,20 @@ public static final int tailleGrille=6;
     }
 
     public void moveLeft(){
-        if(this.playerRound.x>0){
+        if(this.playerRound.x>0 && this.getCase(this.playerRound.x-1,this.playerRound.y).getEtat()!=2){
             playerRound.x-=1;
         }notifyObservers();
     }
 
     public void moveUp(){
-        if(this.playerRound.y>0){
+        if(this.playerRound.y>0 && this.getCase(this.playerRound.x,this.playerRound.y-1).getEtat()!=2){
             playerRound.y-=1;
         }
         notifyObservers();
     }
 
     public void moveDown(){
-        if(this.playerRound.y<tailleGrille-1){
+        if(this.playerRound.y<tailleGrille-1 && this.getCase(this.playerRound.x,this.playerRound.y+1).getEtat()!=2){
             playerRound.y+=1;
         }
         notifyObservers();
@@ -422,14 +427,15 @@ class Vue{
 
 class VueCarte extends JPanel implements Observer{
     private Modele modele;
-    private final static int Taille = 40;
+    private final static int Taille = 45;
+    int limite=Taille*6+20;
 
     public VueCarte(Modele modele){
         this.modele=modele;
         this.setOpaque(false);
         modele.addObserver(this);
         //this.setPreferredSize(Taille*Modele.tailleGrille,Taille*Modele.tailleGrille);
-        Dimension d = new Dimension(450,350);
+        Dimension d = new Dimension(Taille*10,350);
         this.setPreferredSize(d);
     }
 
@@ -457,113 +463,129 @@ class VueCarte extends JPanel implements Observer{
             } else {
                 switch (c.getEtat()) {
                     case 0:
-                        g.setColor(Color.WHITE);
+                        //g.setColor(Color.WHITE);
+                        g.drawImage(this.modele.images.zonesCarteseche.get(c.getX()).get(c.getY()),x,y,Taille,Taille,null);
                         break;
                     case 1:
                         g.setColor(Color.CYAN);
+                        g.fillRect(x, y, Taille, Taille);
                         break;
                     case 2:
                         g.setColor(Color.BLUE);
+                        g.fillRect(x, y, Taille, Taille);
                         break;
                 }
-                g.fillRect(x, y, Taille, Taille);
+                //g.fillRect(x, y, Taille, Taille);
+                if(c.getX()==this.modele.xHelico && c.getY()==this.modele.yHelico){
+                    g.drawImage(this.modele.images.Heliport,x,y,Taille,Taille,null);
+                }
                 if (!c.special.equals("None")) {
                     switch (c.special) {
                         case "Feu":
-                            g.setColor(Color.RED);
+                            //g.setColor(Color.RED);
+                            g.drawImage(this.modele.images.Feu,x+Taille/2,y+Taille/2,Taille/2+5,Taille/2+5,null);
                             break;
                         case "Eau":
-                            g.setColor(Color.BLUE);
+                            //g.setColor(Color.BLUE);
+                            g.drawImage(this.modele.images.Eau,x+Taille/2,y+Taille/2,Taille/2+5,Taille/2+5,null);
                             break;
                         case "Terre":
-                            g.setColor(Color.GREEN);
+                            //g.setColor(Color.GREEN);
+                            g.drawImage(this.modele.images.Terre,x+Taille/2,y+Taille/2,Taille/2+5,Taille/2+5,null);
                             break;
                         case "Air":
-                            g.setColor(Color.LIGHT_GRAY);
+                            //g.setColor(Color.LIGHT_GRAY);
+                            g.drawImage(this.modele.images.Air,x+Taille/2,y+Taille/2,Taille/2+5,Taille/2+5,null);
                             break;
                         case "Helico":
                             g.setColor(Color.BLACK);
+                            g.fillRect(x, y, Taille / 4, Taille / 4);
                             break;
                     }
-                    g.fillRect(x, y, Taille / 4, Taille / 4);
+                    //g.fillRect(x, y, Taille / 4, Taille / 4);
                 }
 
                 if (c.getX() == this.modele.players.get(0).x && c.getY() == this.modele.players.get(0).y) {
-                    g.setColor(Color.YELLOW);
-                    g.fillOval(x, y, Taille, Taille);
+                    //g.setColor(Color.YELLOW);
+                    //g.fillOval(x, y, Taille, Taille);
+                    g.drawImage(this.modele.images.Jaune,x,y,Taille-10,Taille-10,null);
                 }
                 if (c.getX() == this.modele.players.get(1).x && c.getY() == this.modele.players.get(1).y) {
-                    g.setColor(Color.RED);
-                    g.fillOval(x, y, Taille, Taille);
+                    //g.setColor(Color.RED);
+                    //g.fillOval(x, y, Taille, Taille);
+                    g.drawImage(this.modele.images.Rouge,x,y,Taille-10,Taille-10,null);
                 }
                 if (this.modele.players.size() > 2) {
                     if (c.getX() == this.modele.players.get(2).x && c.getY() == this.modele.players.get(2).y) {
-                        g.setColor(Color.GREEN);
-                        g.fillOval(x, y, Taille, Taille);
+                        //g.setColor(Color.GREEN);
+                        //g.fillOval(x, y, Taille, Taille);
+                        g.drawImage(this.modele.images.Vert,x,y,Taille-10,Taille-10,null);
                     }
                 }
                 if (this.modele.players.size() > 3) {
                     if (c.getX() == this.modele.players.get(3).x && c.getY() == this.modele.players.get(3).y) {
-                        g.setColor(Color.MAGENTA);
-                        g.fillOval(x, y, Taille, Taille);
+                        //g.setColor(Color.MAGENTA);
+                        //g.fillOval(x, y, Taille, Taille);
+                        g.drawImage(this.modele.images.Noir,x,y,Taille-10,Taille-10,null);
                     }
                 }
                 g.setColor(Color.WHITE);
-                g.drawString(this.modele.playerRound.nom, 260, 20);
-                g.drawString("move left :" + this.modele.playerRound.nbLeft, 260, 40);
-                g.drawString("clés : ", 260, 60);
+                g.drawString(this.modele.playerRound.nom, limite, 20);
+                g.drawString("move left :" + this.modele.playerRound.nbLeft, limite, 40);
+                g.drawString("clés : ", limite, 60);
                 for (int i = 0; i < this.modele.playerRound.inventaireCle.size(); i++) {
                     switch (this.modele.playerRound.inventaireCle.get(i).type) {
                         case "Feu":
                             g.setColor(Color.RED);
-                            g.fillRect(260 + 40 + i * 25, 45, 20, 20);
+                            g.fillRect(limite + 40 + i * 25, 45, 20, 20);
                             break;
                         case "Eau":
                             g.setColor(Color.BLUE);
-                            g.fillRect(260 + 40 + i * 25, 45, 20, 20);
+                            g.fillRect(limite + 40 + i * 25, 45, 20, 20);
                             break;
                         case "Terre":
                             g.setColor(Color.GREEN);
-                            g.fillRect(260 + 40 + i * 25, 45, 20, 20);
+                            g.fillRect(limite + 40 + i * 25, 45, 20, 20);
                             break;
                         case "Air":
                             g.setColor(Color.LIGHT_GRAY);
-                            g.fillRect(260 + 40 + i * 25, 45, 20, 20);
+                            g.fillRect(limite + 40 + i * 25, 45, 20, 20);
                             break;
                     }
                 }
                 g.setColor(Color.WHITE);
-                g.drawString("artefact :", 260, 80);
+                g.drawString("artefact :", limite, 80);
                 for (int i = 0; i < this.modele.playerRound.inventaireArtefact.size(); i++) {
                     switch (this.modele.playerRound.inventaireArtefact.get(i).type) {
                         case "Feu":
                             g.setColor(Color.RED);
-                            g.fillRect(260 + 60 + i * 25, 70, 20, 20);
+                            g.fillRect(limite + 60 + i * 25, 70, 20, 20);
                             break;
                         case "Eau":
                             g.setColor(Color.BLUE);
-                            g.fillRect(260 + 60 + i * 25, 70, 20, 20);
+                            g.fillRect(limite + 60 + i * 25, 70, 20, 20);
                             break;
                         case "Terre":
                             g.setColor(Color.GREEN);
-                            g.fillRect(260 + 60 + i * 25, 70, 20, 20);
+                            g.fillRect(limite + 60 + i * 25, 70, 20, 20);
                             break;
                         case "Air":
                             g.setColor(Color.LIGHT_GRAY);
-                            g.fillRect(260 + 60 + i * 25, 70, 20, 20);
+                            g.fillRect(limite + 60 + i * 25, 70, 20, 20);
                             break;
                     }
                 }
-                g.drawString("inventaire :", 260, 100);
+                g.setColor(Color.WHITE);
+                g.drawString("inventaire :", limite, 100);
                 for (int i = 0; i < this.modele.playerRound.inventaireActionSpe.size(); i++) {
                     switch (this.modele.playerRound.inventaireActionSpe.get(i).type) {
                         case "Helico":
                             g.setColor(Color.BLACK);
-                            g.fillRect(260 + 80 + i * 25, 90, 20, 20);
+                            g.fillRect(limite + 80 + i * 25, 90, 20, 20);
                             break;
                         case "Sable":
                             g.setColor(Color.YELLOW);
-                            g.fillRect(260 + 80 + i * 25, 90, 20, 20);
+                            g.fillRect(limite + 80 + i * 25, 90, 20, 20);
                             break;
                     }
                 }
@@ -608,9 +630,9 @@ class VueCommandes extends JPanel{
         JButton artefact = new JButton("Artefact");
         this.add(artefact);
         artefact.addActionListener(ctrl);
-        JButton cle = new JButton("Cle");
-        this.add(cle);
-        cle.addActionListener(ctrl);
+        //JButton cle = new JButton("      ");
+        //this.add(cle);
+        //cle.addActionListener(ctrl);
         JLabel playerdon = new JLabel("nom player");
         playerdon.setForeground(Color.WHITE);
         JLabel cartedon=new JLabel("carte ");
@@ -643,11 +665,11 @@ class VueCommandes extends JPanel{
         this.add(sable);
         sable.addActionListener(ctrl);
         JLabel helicox=new JLabel("x helico");
+        helicox.setForeground(Color.WHITE);
         JLabel helicoy = new JLabel("y helico");
+        helicoy.setForeground(Color.WHITE);
         JTextField xhelico =new JTextField(5);
-        xhelico.setForeground(Color.WHITE);
         JTextField yhelico= new JTextField(5);
-        yhelico.setForeground(Color.WHITE);
         ctrl.xHelico=xhelico;
         ctrl.yHelico=yhelico;
         JCheckBox people = new JCheckBox("prendre les autres");
@@ -1078,6 +1100,108 @@ class Exchange implements ActionListener{
                 carte=fieldC.getText();
                 player=fieldP.getText();
             }
+        }
+    }
+}
+
+
+class Images {
+    BufferedImage Jaune;
+    BufferedImage Noir;
+    BufferedImage Rouge;
+    BufferedImage Vert;
+    BufferedImage Feu;
+    BufferedImage Eau;
+    BufferedImage Terre;
+    BufferedImage Air;
+
+    BufferedImage Zone1;
+    BufferedImage Zone2;
+    BufferedImage Zone3;
+    BufferedImage Zone4;
+    BufferedImage Zone5;
+    BufferedImage Zone6;
+    BufferedImage Heliport;
+
+    ArrayList<ArrayList<BufferedImage>>  zonesCarteseche;
+
+    public Images(){
+        this.Jaune=ChargeImage("Jaune");
+        this.Noir=ChargeImage("Noir");
+        this.Rouge=ChargeImage("Rouge");
+        this.Vert=ChargeImage("Vert");
+        this.Feu=ChargeImage("Feu");
+        this.Eau=ChargeImage("Eau");
+        this.Terre=ChargeImage("Terre");
+        this.Air=ChargeImage("Air");
+        this.Zone1=ChargeImage("Zone1");
+        this.Zone2=ChargeImage("Zone2");
+        this.Zone3=ChargeImage("Zone3");
+        this.Zone4=ChargeImage("Zone4");
+        this.Zone5=ChargeImage("Zone5");
+        this.Zone6=ChargeImage("Zone6");
+        this.Heliport=ChargeImage("Helico");
+
+        zonesCarteseche=new ArrayList<>();
+        ArrayList<BufferedImage> a1=new ArrayList<>();
+        a1.add(Zone1);
+        a1.add(Zone2);
+        a1.add(Zone3);
+        a1.add(Zone4);
+        a1.add(Zone5);
+        a1.add(Zone6);
+        ArrayList<BufferedImage> a2=new ArrayList<>();
+        a2.add(Zone4);
+        a2.add(Zone3);
+        a2.add(Zone1);
+        a2.add(Zone2);
+        a2.add(Zone6);
+        a2.add(Zone5);
+        ArrayList<BufferedImage> a3=new ArrayList<>();
+        a3.add(Zone4);
+        a3.add(Zone2);
+        a3.add(Zone5);
+        a3.add(Zone3);
+        a3.add(Zone6);
+        a3.add(Zone1);
+        ArrayList<BufferedImage> a4=new ArrayList<>();
+        a4.add(Zone6);
+        a4.add(Zone2);
+        a4.add(Zone1);
+        a4.add(Zone4);
+        a4.add(Zone3);
+        a4.add(Zone5);
+        ArrayList<BufferedImage> a5=new ArrayList<>();
+        a5.add(Zone3);
+        a5.add(Zone5);
+        a5.add(Zone1);
+        a5.add(Zone4);
+        a5.add(Zone2);
+        a5.add(Zone6);
+        ArrayList<BufferedImage> a6=new ArrayList<>();
+        a6.add(Zone3);
+        a6.add(Zone2);
+        a6.add(Zone1);
+        a6.add(Zone4);
+        a6.add(Zone6);
+        a6.add(Zone5);
+        zonesCarteseche.add(a1);
+        zonesCarteseche.add(a2);
+        zonesCarteseche.add(a3);
+        zonesCarteseche.add(a4);
+        zonesCarteseche.add(a5);
+        zonesCarteseche.add(a6);
+
+
+
+    }
+
+    public static BufferedImage ChargeImage(String filename) {
+        try {
+            return ImageIO.read(new File("src/Images/" + filename + ".png"));
+        } catch (IOException io) {
+            System.out.println(filename);
+            throw new RuntimeException(io);
         }
     }
 }
