@@ -72,6 +72,7 @@ public static final int tailleGrille=6;
                     players.add(new Player(0,0,names.get(i),this));
                     //players.get(0).inventaireArtefact.add(new Artefact("Feu"));
                     //players.get(0).inventaireActionSpe.add(new ActionSpe("Sable"));
+                    players.get(0).inventaireActionSpe.add(new ActionSpe("Helico"));
                     break;
                 case 1:
                     players.add(new Player(5,0,names.get(i),this));
@@ -573,8 +574,8 @@ class VueCommandes extends JPanel{
         JTextField carte = new JTextField(10);
         JLabel sablex = new JLabel("x sable");
         JLabel sabley=new JLabel("y sable");
-        JTextField xsable =new JTextField(5);
-        JTextField ysable = new JTextField(5);
+        JTextField xsable =new JTextField(8);
+        JTextField ysable = new JTextField(8);
         ctrl.xSable=xsable;
         ctrl.ySable=ysable;
         ctrl.carte=carte;
@@ -594,6 +595,23 @@ class VueCommandes extends JPanel{
         JButton sable = new JButton("Sable");
         this.add(sable);
         sable.addActionListener(ctrl);
+        JLabel helicox=new JLabel("x helico");
+        JLabel helicoy = new JLabel("y helico");
+        JTextField xhelico =new JTextField(5);
+        JTextField yhelico= new JTextField(5);
+        ctrl.xHelico=xhelico;
+        ctrl.yHelico=yhelico;
+        JCheckBox people = new JCheckBox("prendre les autres");
+        ctrl.box=people;
+        this.add(helicox);
+        this.add(xhelico);
+        this.add(helicoy);
+        this.add(yhelico);
+        this.add(people);
+
+        JButton helico = new JButton("Helico");
+        this.add(helico);
+        helico.addActionListener(ctrl);
 
     }
 }
@@ -624,6 +642,9 @@ class Controleur implements ActionListener {
     JTextField player;
     JTextField xSable;
     JTextField ySable;
+    JTextField xHelico;
+    JTextField yHelico;
+    JCheckBox box;
 
     public Controleur(Modele modele){
         this.modele=modele;
@@ -641,11 +662,31 @@ class Controleur implements ActionListener {
             }
         }
 
+        if(e.getActionCommand().equals("Helico")){
+            if(this.modele.playerRound.isInInventory("Helico") && this.modele.getCase(Integer.valueOf(xHelico.getText()),Integer.valueOf(yHelico.getText())).canBeDried()){
+                if(box.isSelected()){
+                    System.out.println("select");
+                    int x=modele.playerRound.x;
+                    int y=modele.playerRound.y;
+                    for(int i=0;i<this.modele.players.size();i++){
+                        System.out.println("("+modele.players.get(i).x+modele.players.get(i).y+")  "+"("+modele.playerRound.x+modele.playerRound.y+")");
+                        if(this.modele.players.get(i).x==x && this.modele.players.get(i).y==y){
+                            System.out.println("dans la boucle");
+                            this.modele.players.get(i).x=Integer.valueOf(xHelico.getText());
+                            this.modele.players.get(i).y=Integer.valueOf(yHelico.getText());
+                        }
+                    }
+                }else{
+                    this.modele.playerRound.x=Integer.valueOf(xHelico.getText());
+                    this.modele.playerRound.y=Integer.valueOf(yHelico.getText());
+                }
+                this.modele.playerRound.UseActionSpe("Helico");
+            }else{
+                this.modele.playerRound.nbLeft++;
+            }
+        }
+
         if(e.getActionCommand().equals("Echange")){
-
-            //while(echange.carte.equals("")){
-
-            //}
             for(int i=0;i<this.modele.players.size();i++){
                 if(this.modele.players.get(i).nom.equals(player.getText()) && this.modele.playerRound.x==this.modele.players.get(i).x && this.modele.playerRound.y==this.modele.players.get(i).y){
                     System.out.println("meme case ");
