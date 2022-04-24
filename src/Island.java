@@ -8,7 +8,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Random;
 
 interface Observer {
@@ -21,16 +20,16 @@ abstract class Observable {
 
     private ArrayList<Observer> observers;
     public Observable() {
-    this.observers = new ArrayList<Observer>();
+        this.observers = new ArrayList<Observer>();
     }
     public void addObserver(Observer o) {
-    observers.add(o);
+        observers.add(o);
     }
 
     public void notifyObservers() {
-    for(Observer o : observers) {
-        o.update();
-    }
+        for(Observer o : observers) {
+            o.update();
+        }
     }
 }
 
@@ -43,8 +42,8 @@ public class Island {
 
         Parametre finalP = p;
         EventQueue.invokeLater(() -> {
-                Modele modele = new Modele(finalP.names, finalP.roles);
-                Vue vue = new Vue(modele);
+            Modele modele = new Modele(finalP.names);
+            Vue vue = new Vue(modele);
         });
     }
 }
@@ -53,8 +52,8 @@ public class Island {
 
 
 class Modele extends Observable{
-public static final int tailleGrille=6;
-Images images;
+    public static final int tailleGrille=6;
+    public Images images;
 
     private Case[][] cases;
     ArrayList<Case> innondables;
@@ -62,13 +61,13 @@ Images images;
     //Player p2;
     //Player p3;
     //Player p4;
-    Player playerRound;
+    public Player playerRound;
     int xHelico;
     int yHelico;
     ArrayList<Player> players;
     boolean lost;
 
-    public Modele(ArrayList<String> names, ArrayList<String> roles){
+    public Modele(ArrayList<String> names){
         images=new Images();
         cases=new Case[tailleGrille][tailleGrille];
         lost=false;
@@ -78,28 +77,30 @@ Images images;
             switch (i){
                 case 0:
                     players.add(new Player(0,0,names.get(i),this));
-                    players.get(0).role=roles.get(i);
                     //players.get(0).inventaireArtefact.add(new Artefact("Feu"));
                     //players.get(0).inventaireActionSpe.add(new ActionSpe("Sable"));
-                    players.get(0).inventaireActionSpe.add(new ActionSpe("Helico"));
+                    //players.get(0).inventaireActionSpe.add(new ActionSpe("Helico"));
                     break;
                 case 1:
                     players.add(new Player(5,0,names.get(i),this));
-                    players.get(1).role=roles.get(i);
                     //players.get(1).inventaireArtefact.add(new Artefact("Eau"));
                     break;
                 case 2:
                     players.add(new Player(5,5,names.get(i),this));
-                    players.get(2).role=roles.get(i);
                     //players.get(2).inventaireArtefact.add(new Artefact("Terre"));
                     break;
                 case 3:
                     players.add(new Player(0,5,names.get(i),this));
-                    players.get(2).role=roles.get(i);
                     //players.get(3).inventaireArtefact.add(new Artefact("Air"));
                     break;
             }
         }
+        String nomp1=new String("Player1");
+        String nom2= new String("Player2");
+        //p1=new Player(0,0,nomp1,this);
+        //p2=new Player(5,5,nom2,this);
+        //p3=new Player(5,0,"Player 3",this);
+        //p4=new Player(0,5,"Player 4",this);
         playerRound=players.get(0);
         for(int i=0;i<tailleGrille;i++){
             for(int j=0;j<tailleGrille;j++) {
@@ -160,29 +161,29 @@ Images images;
                 return false;
             }
         }
-            int feu = 0;
-            int eau = 0;
-            int terre = 0;
-            int air = 0;
-            for(int i=0;i<players.size();i++){
-                for(int e=0;e<players.get(i).inventaireArtefact.size();e++){
-                    if(players.get(i).inventaireArtefact.get(e).type.equals("Feu")){
-                        feu++;
-                    }
-                    if(players.get(i).inventaireArtefact.get(e).type.equals("Eau")){
-                        eau++;
-                    }
-                    if(players.get(i).inventaireArtefact.get(e).type.equals("Terre")){
-                        terre++;
-                    }
-                    if(players.get(i).inventaireArtefact.get(e).type.equals("Air")){
-                        air++;
-                    }
+        int feu = 0;
+        int eau = 0;
+        int terre = 0;
+        int air = 0;
+        for(int i=0;i<players.size();i++){
+            for(int e=0;e<players.get(i).inventaireArtefact.size();e++){
+                if(players.get(i).inventaireArtefact.get(e).type.equals("Feu")){
+                    feu++;
+                }
+                if(players.get(i).inventaireArtefact.get(e).type.equals("Eau")){
+                    eau++;
+                }
+                if(players.get(i).inventaireArtefact.get(e).type.equals("Terre")){
+                    terre++;
+                }
+                if(players.get(i).inventaireArtefact.get(e).type.equals("Air")){
+                    air++;
                 }
             }
-            if(feu>0 && eau>0 && terre>0 && air>0){
-                return true;
-            }
+        }
+        if(feu>0 && eau>0 && terre>0 && air>0){
+            return true;
+        }
         return false;
     }
 
@@ -199,26 +200,20 @@ Images images;
             return false;
         }
 
-        for(int i=0;i<this.players.size();i++) {
-            ArrayList<Boolean> parPlayer = new ArrayList<Boolean>();
-            if (playerRound.role.equals("plongeur")) {
+        for(int i=0;i<this.players.size();i++){
+            ArrayList<Boolean> parPlayer=new ArrayList<Boolean>();
+            if (this.players.get(i).x>0 && this.getCase(this.players.get(i).x-1,this.players.get(i).y).getEtat()!=2) {
                 parPlayer.add(false);
-            } else {
-                if (this.players.get(i).x > 0 && this.getCase(this.players.get(i).x - 1, this.players.get(i).y).getEtat() != 2) {
-                    parPlayer.add(false);
-                }
-                if (this.players.get(i).x < tailleGrille - 1 && this.getCase(this.players.get(i).x + 1, this.players.get(i).y).getEtat() != 2) {
-                    parPlayer.add(false);
-                }
-                if (this.players.get(i).y > 0 && this.getCase(this.players.get(i).x, this.players.get(i).y - 1).getEtat() != 2) {
-                    parPlayer.add(false);
-                }
-                if (this.players.get(i).y < tailleGrille - 1 && this.getCase(this.players.get(i).x, this.players.get(i).y + 1).getEtat() != 2) {
-                    parPlayer.add(false);
-                }
-                if (!parPlayer.contains(false)) {
-                    return true;
-                }
+            }
+            if (this.players.get(i).x<tailleGrille-1 && this.getCase(this.players.get(i).x+1,this.players.get(i).y).getEtat()!=2){
+                parPlayer.add(false);
+            }if (this.players.get(i).y>0 && this.getCase(this.players.get(i).x,this.players.get(i).y-1).getEtat()!=2){
+                parPlayer.add(false);
+            }if (this.players.get(i).y<tailleGrille-1 && this.getCase(this.players.get(i).x,this.players.get(i).y+1).getEtat()!=2){
+                parPlayer.add(false);
+            }
+            if(!parPlayer.contains(false)){
+                return true;
             }
         }
         return false;
@@ -299,13 +294,13 @@ Images images;
                 }
             }
         }
-       // System.out.println(this.playerRound.nom);
+        // System.out.println(this.playerRound.nom);
         notifyObservers();
     }
 
 
     public void moveRight(){
-        if(this.playerRound.x<tailleGrille-1 && this.getCase(this.playerRound.x+1,this.playerRound.y).getEtat()!=2 || playerRound.role.equals("plongeur")){
+        if(this.playerRound.x<tailleGrille-1 && this.getCase(this.playerRound.x+1,this.playerRound.y).getEtat()!=2){
             playerRound.x+=1;
         }else {
             playerRound.nbLeft++;
@@ -313,20 +308,20 @@ Images images;
     }
 
     public void moveLeft(){
-        if(this.playerRound.x>0 && this.getCase(this.playerRound.x-1,this.playerRound.y).getEtat()!=2 || playerRound.role.equals("plongeur")){
+        if(this.playerRound.x>0 && this.getCase(this.playerRound.x-1,this.playerRound.y).getEtat()!=2){
             playerRound.x-=1;
         }notifyObservers();
     }
 
     public void moveUp(){
-        if(this.playerRound.y>0 && this.getCase(this.playerRound.x,this.playerRound.y-1).getEtat()!=2 || playerRound.role.equals("plongeur")){
+        if(this.playerRound.y>0 && this.getCase(this.playerRound.x,this.playerRound.y-1).getEtat()!=2){
             playerRound.y-=1;
         }
         notifyObservers();
     }
 
     public void moveDown(){
-        if(this.playerRound.y<tailleGrille-1 && this.getCase(this.playerRound.x,this.playerRound.y+1).getEtat()!=2 || playerRound.role.equals("plongeur")){
+        if(this.playerRound.y<tailleGrille-1 && this.getCase(this.playerRound.x,this.playerRound.y+1).getEtat()!=2){
             playerRound.y+=1;
         }
         notifyObservers();
@@ -342,8 +337,8 @@ class Case{
     private Modele modele;
     private int etat;
     private final int x,y;
-    String special;
-    String ActionSpe;
+    public String special;
+    public String ActionSpe;
 
     public Case(Modele modele, int x, int y){
         this.modele=modele;
@@ -614,8 +609,6 @@ class VueCarte extends JPanel implements Observer{
                             break;
                     }
                 }
-                g.setColor(Color.WHITE);
-                g.drawString("role :"+this.modele.playerRound.role, limite,120);
             }
         }
     }
@@ -628,7 +621,7 @@ class VueCommandes extends JPanel{
         this.setOpaque(false);
         //this.setBackground(new Color(0,0,0,125));
         this.modele=modele;
-        Dimension d = new Dimension(450,450);
+        Dimension d = new Dimension(450,350);
         this.setPreferredSize(d);
         JPanel p=new JPanel();
         p.setLayout(null);
@@ -645,7 +638,7 @@ class VueCommandes extends JPanel{
         JButton left = new JButton("<");
         this.add(left);
         left.addActionListener(ctrl);
-        JButton down = new JButton("u");
+        JButton down = new JButton("v");
         this.add(down);
         down.addActionListener(ctrl);
         JButton here = new JButton("here");
@@ -712,30 +705,25 @@ class VueCommandes extends JPanel{
         this.add(helico);
         helico.addActionListener(ctrl);
 
-
     }
 }
 /**
-class VueInfo extends JPanel implements Observer{
-    private Modele modele;
-
-    public VueInfo(Modele modele){
-        this.modele=modele;
-        JLabel player=new JLabel(modele.playerRound.nom);
-        JLabel moveLeft=new JLabel("move left :"+modele.playerRound.nbLeft);
-        this.add(player);
-        this.add(moveLeft);
-    }
-
-    public void update(){
-
-    }
-
-}
+ class VueInfo extends JPanel implements Observer{
+ private Modele modele;
+ public VueInfo(Modele modele){
+ this.modele=modele;
+ JLabel player=new JLabel(modele.playerRound.nom);
+ JLabel moveLeft=new JLabel("move left :"+modele.playerRound.nbLeft);
+ this.add(player);
+ this.add(moveLeft);
+ }
+ public void update(){
+ }
+ }
  **/
 
 class Controleur implements ActionListener {
-    Modele modele;
+    public Modele modele;
     boolean assecher;
     boolean sable;
     JTextField carte;
@@ -754,7 +742,7 @@ class Controleur implements ActionListener {
 
     public void actionPerformed(ActionEvent e){
         //System.out.println("nombre de coups restant : "+this.modele.playerRound.nbLeft);
-        if(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).getEtat()==2 && this.modele.playerRound.nbLeft==0 && !modele.playerRound.role.equals("plongeur")){
+        if(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).getEtat()==2 && this.modele.playerRound.nbLeft==0){
             this.modele.lost=true;
         }
 
@@ -842,7 +830,7 @@ class Controleur implements ActionListener {
                     modele.moveUp();
                 }
             }
-            if (e.getActionCommand().equals("u")) {
+            if (e.getActionCommand().equals("v")) {
                 if(assecher && this.modele.playerRound.Dryable(this.modele.playerRound.x,this.modele.playerRound.y+1)){
                     this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y+1).seche();
                     this.assecher=false;
@@ -865,7 +853,7 @@ class Controleur implements ActionListener {
             modele.playerRound.removeLeft();
         }else{
             if (e.getActionCommand().equals("fin de tour")) {
-                if(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).getEtat()==2 && !modele.playerRound.role.equals("plongeur")){
+                if(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).getEtat()==2){
                     this.modele.lost=true;
                 }
                 this.modele.getCle();
@@ -879,7 +867,6 @@ class Controleur implements ActionListener {
 
 class Player{
     public Modele modele;
-    String role;
     public int x;
     public int y;
     public String nom;
@@ -955,21 +942,21 @@ class Player{
     }
 
     /**public ArrayList<Case> Dryable(){
-        ArrayList<Case> t = new ArrayList<>();
-        if(this.x>0 && this.modele.getCase(this.x-1,y).canBeDried()){
-            t.add(this.modele.getCase(this.x-1,this.y));
-        }
-        if(this.x<modele.tailleGrille && this.modele.getCase(this.x+1,y).canBeDried()){
-            t.add(this.modele.getCase(this.x+1,y));
-        }
-        if(this.y>0 && this.modele.getCase(this.x,y-1).canBeDried()){
-            t.add(this.modele.getCase(this.x,this.y-1));
-        }
-        if(this.y<this.modele.tailleGrille && this.modele.getCase(this.x,y+1).canBeDried()){
-            t.add(this.modele.getCase(this.x,this.y+1));
-        }
-        return t;
-    }**/
+     ArrayList<Case> t = new ArrayList<>();
+     if(this.x>0 && this.modele.getCase(this.x-1,y).canBeDried()){
+     t.add(this.modele.getCase(this.x-1,this.y));
+     }
+     if(this.x<modele.tailleGrille && this.modele.getCase(this.x+1,y).canBeDried()){
+     t.add(this.modele.getCase(this.x+1,y));
+     }
+     if(this.y>0 && this.modele.getCase(this.x,y-1).canBeDried()){
+     t.add(this.modele.getCase(this.x,this.y-1));
+     }
+     if(this.y<this.modele.tailleGrille && this.modele.getCase(this.x,y+1).canBeDried()){
+     t.add(this.modele.getCase(this.x,this.y+1));
+     }
+     return t;
+     }**/
 
     public boolean Dryable(int x, int y){
         return (x>=0 && y>=0 && x<this.modele.tailleGrille && y<this.modele.tailleGrille && this.modele.getCase(x,y).canBeDried());
@@ -990,7 +977,7 @@ class Player{
 }
 
 class Artefact{
-    String type;
+    public String type;
 
     public Artefact(String type){
         this.type=type;
@@ -998,7 +985,7 @@ class Artefact{
 }
 
 class Cle{
-    String type;
+    public String type;
 
     public Cle(String type){
         this.type=type;
@@ -1006,7 +993,7 @@ class Cle{
 }
 
 class ActionSpe{
-    String type;
+    public String type;
 
     public ActionSpe(String type){
         this.type=type;
@@ -1017,56 +1004,46 @@ class ActionSpe{
 class Parametre implements ActionListener{
     int nbJoueurs;
     ArrayList<String> names;
-    ArrayList<String> roles;
     JTextField field1;
     JTextField field2;
     JTextField field3;
     JTextField field4;
-    JTextField r1;
-    JTextField r2;
-    JTextField r3;
-    JTextField r4;
 
 
     public Parametre(){
         int n;
+        /**
+         * JFrame framParam = new JFrame("Parameters");
+         framParam.setSize(new Dimension(400,120));
+         JLabel labelNb= new JLabel("Nombre de joueurs : ");
+         framParam.add(labelNb);
+         fieldNbPlayers=new JTextField(20);
+         framParam.add(fieldNbPlayers);
+         JButton suivantNbPlayers=new JButton("Next");
+         framParam.add(suivantNbPlayers);
+         framParam.setLayout(new FlowLayout());
+         suivantNbPlayers.addActionListener(this);
+         framParam.setVisible(true);
+         **/
         names=new ArrayList<>();
-        roles=new ArrayList<>();
         JFrame framParam = new JFrame("Parameters");
-        framParam.setSize(new Dimension(400,400));
+        framParam.setSize(new Dimension(400,200));
         JLabel label1= new JLabel("Nom player 1");
         JLabel labe2= new JLabel("Nom player 2");
         JLabel label3= new JLabel("Nom player 3");
         JLabel label4= new JLabel("Nom player 4");
-        JLabel role1= new JLabel("Role player 1:");
-        JLabel role2= new JLabel("Role player 2:");
-        JLabel role3= new JLabel("Role player 3:");
-        JLabel role4= new JLabel("Role player 4:");
         framParam.add(label1);
         field1=new JTextField(20);
         field2=new JTextField(20);
         field3=new JTextField(20);
         field4=new JTextField(20);
-
-        r1=new JTextField(20);
-        r2=new JTextField(20);
-        r3=new JTextField(20);
-        r4=new JTextField(20);
         framParam.add(field1);
-        framParam.add(role1);
-        framParam.add(r1);
         framParam.add(labe2);
         framParam.add(field2);
-        framParam.add(role2);
-        framParam.add(r2);
         framParam.add(label3);
         framParam.add(field3);
-        framParam.add(role3);
-        framParam.add(r3);
         framParam.add(label4);
         framParam.add(field4);
-        framParam.add(role4);
-        framParam.add(r4);
         JButton suivantNbPlayers=new JButton("Finish");
         framParam.add(suivantNbPlayers);
         framParam.setLayout(new FlowLayout());
@@ -1095,10 +1072,6 @@ class Parametre implements ActionListener{
             if(!field4.getText().equals("")){
                 names.add(field4.getText());
             }
-            roles.add(r1.getText().toLowerCase());
-            roles.add(r2.getText().toLowerCase());
-            roles.add(r3.getText().toLowerCase());
-            roles.add(r4.getText().toLowerCase());
         }
     }
 }
@@ -1106,10 +1079,10 @@ class Parametre implements ActionListener{
 
 
 class Exchange implements ActionListener{
-    JTextField fieldP;
-    JTextField fieldC;
-    String player;
-    String carte;
+    public JTextField fieldP;
+    public JTextField fieldC;
+    public String player;
+    public String carte;
 
 
     public Exchange(){
@@ -1130,7 +1103,7 @@ class Exchange implements ActionListener{
         framParam.setVisible(true);
         carte="";
         //while(carte.equals("")){
-            //System.out.println("lall");
+        //System.out.println("lall");
         //}// boucle pour empecher le jeux de se lancer si nb players <2
 
 
