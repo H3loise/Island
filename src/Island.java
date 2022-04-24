@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Random;
 
 interface Observer {
@@ -42,7 +43,7 @@ public class Island {
 
         Parametre finalP = p;
         EventQueue.invokeLater(() -> {
-                Modele modele = new Modele(finalP.names);
+                Modele modele = new Modele(finalP.names, finalP.roles);
                 Vue vue = new Vue(modele);
         });
     }
@@ -67,7 +68,7 @@ Images images;
     ArrayList<Player> players;
     boolean lost;
 
-    public Modele(ArrayList<String> names){
+    public Modele(ArrayList<String> names, ArrayList<String> roles){
         images=new Images();
         cases=new Case[tailleGrille][tailleGrille];
         lost=false;
@@ -77,30 +78,28 @@ Images images;
             switch (i){
                 case 0:
                     players.add(new Player(0,0,names.get(i),this));
+                    players.get(0).role=roles.get(i);
                     //players.get(0).inventaireArtefact.add(new Artefact("Feu"));
                     //players.get(0).inventaireActionSpe.add(new ActionSpe("Sable"));
                     players.get(0).inventaireActionSpe.add(new ActionSpe("Helico"));
                     break;
                 case 1:
                     players.add(new Player(5,0,names.get(i),this));
+                    players.get(1).role=roles.get(i);
                     //players.get(1).inventaireArtefact.add(new Artefact("Eau"));
                     break;
                 case 2:
                     players.add(new Player(5,5,names.get(i),this));
+                    players.get(2).role=roles.get(i);
                     //players.get(2).inventaireArtefact.add(new Artefact("Terre"));
                     break;
                 case 3:
                     players.add(new Player(0,5,names.get(i),this));
+                    players.get(2).role=roles.get(i);
                     //players.get(3).inventaireArtefact.add(new Artefact("Air"));
                     break;
             }
         }
-        String nomp1=new String("Player1");
-        String nom2= new String("Player2");
-        //p1=new Player(0,0,nomp1,this);
-        //p2=new Player(5,5,nom2,this);
-        //p3=new Player(5,0,"Player 3",this);
-        //p4=new Player(0,5,"Player 4",this);
         playerRound=players.get(0);
         for(int i=0;i<tailleGrille;i++){
             for(int j=0;j<tailleGrille;j++) {
@@ -200,20 +199,26 @@ Images images;
             return false;
         }
 
-        for(int i=0;i<this.players.size();i++){
-            ArrayList<Boolean> parPlayer=new ArrayList<Boolean>();
-            if (this.players.get(i).x>0 && this.getCase(this.players.get(i).x-1,this.players.get(i).y).getEtat()!=2) {
+        for(int i=0;i<this.players.size();i++) {
+            ArrayList<Boolean> parPlayer = new ArrayList<Boolean>();
+            if (playerRound.role.equals("plongeur")) {
                 parPlayer.add(false);
-            }
-            if (this.players.get(i).x<tailleGrille-1 && this.getCase(this.players.get(i).x+1,this.players.get(i).y).getEtat()!=2){
-                parPlayer.add(false);
-            }if (this.players.get(i).y>0 && this.getCase(this.players.get(i).x,this.players.get(i).y-1).getEtat()!=2){
-                parPlayer.add(false);
-            }if (this.players.get(i).y<tailleGrille-1 && this.getCase(this.players.get(i).x,this.players.get(i).y+1).getEtat()!=2){
-                parPlayer.add(false);
-            }
-            if(!parPlayer.contains(false)){
-                return true;
+            } else {
+                if (this.players.get(i).x > 0 && this.getCase(this.players.get(i).x - 1, this.players.get(i).y).getEtat() != 2) {
+                    parPlayer.add(false);
+                }
+                if (this.players.get(i).x < tailleGrille - 1 && this.getCase(this.players.get(i).x + 1, this.players.get(i).y).getEtat() != 2) {
+                    parPlayer.add(false);
+                }
+                if (this.players.get(i).y > 0 && this.getCase(this.players.get(i).x, this.players.get(i).y - 1).getEtat() != 2) {
+                    parPlayer.add(false);
+                }
+                if (this.players.get(i).y < tailleGrille - 1 && this.getCase(this.players.get(i).x, this.players.get(i).y + 1).getEtat() != 2) {
+                    parPlayer.add(false);
+                }
+                if (!parPlayer.contains(false)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -300,7 +305,7 @@ Images images;
 
 
     public void moveRight(){
-        if(this.playerRound.x<tailleGrille-1 && this.getCase(this.playerRound.x+1,this.playerRound.y).getEtat()!=2){
+        if(this.playerRound.x<tailleGrille-1 && this.getCase(this.playerRound.x+1,this.playerRound.y).getEtat()!=2 || playerRound.role.equals("plongeur")){
             playerRound.x+=1;
         }else {
             playerRound.nbLeft++;
@@ -308,20 +313,20 @@ Images images;
     }
 
     public void moveLeft(){
-        if(this.playerRound.x>0 && this.getCase(this.playerRound.x-1,this.playerRound.y).getEtat()!=2){
+        if(this.playerRound.x>0 && this.getCase(this.playerRound.x-1,this.playerRound.y).getEtat()!=2 || playerRound.role.equals("plongeur")){
             playerRound.x-=1;
         }notifyObservers();
     }
 
     public void moveUp(){
-        if(this.playerRound.y>0 && this.getCase(this.playerRound.x,this.playerRound.y-1).getEtat()!=2){
+        if(this.playerRound.y>0 && this.getCase(this.playerRound.x,this.playerRound.y-1).getEtat()!=2 || playerRound.role.equals("plongeur")){
             playerRound.y-=1;
         }
         notifyObservers();
     }
 
     public void moveDown(){
-        if(this.playerRound.y<tailleGrille-1 && this.getCase(this.playerRound.x,this.playerRound.y+1).getEtat()!=2){
+        if(this.playerRound.y<tailleGrille-1 && this.getCase(this.playerRound.x,this.playerRound.y+1).getEtat()!=2 || playerRound.role.equals("plongeur")){
             playerRound.y+=1;
         }
         notifyObservers();
@@ -609,6 +614,8 @@ class VueCarte extends JPanel implements Observer{
                             break;
                     }
                 }
+                g.setColor(Color.WHITE);
+                g.drawString("role :"+this.modele.playerRound.role, limite,120);
             }
         }
     }
@@ -621,7 +628,7 @@ class VueCommandes extends JPanel{
         this.setOpaque(false);
         //this.setBackground(new Color(0,0,0,125));
         this.modele=modele;
-        Dimension d = new Dimension(450,350);
+        Dimension d = new Dimension(450,450);
         this.setPreferredSize(d);
         JPanel p=new JPanel();
         p.setLayout(null);
@@ -705,6 +712,7 @@ class VueCommandes extends JPanel{
         this.add(helico);
         helico.addActionListener(ctrl);
 
+
     }
 }
 /**
@@ -746,7 +754,7 @@ class Controleur implements ActionListener {
 
     public void actionPerformed(ActionEvent e){
         //System.out.println("nombre de coups restant : "+this.modele.playerRound.nbLeft);
-        if(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).getEtat()==2 && this.modele.playerRound.nbLeft==0){
+        if(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).getEtat()==2 && this.modele.playerRound.nbLeft==0 && !modele.playerRound.role.equals("plongeur")){
             this.modele.lost=true;
         }
 
@@ -857,7 +865,7 @@ class Controleur implements ActionListener {
             modele.playerRound.removeLeft();
         }else{
             if (e.getActionCommand().equals("fin de tour")) {
-                if(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).getEtat()==2){
+                if(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).getEtat()==2 && !modele.playerRound.role.equals("plongeur")){
                     this.modele.lost=true;
                 }
                 this.modele.getCle();
@@ -871,6 +879,7 @@ class Controleur implements ActionListener {
 
 class Player{
     public Modele modele;
+    String role;
     public int x;
     public int y;
     public String nom;
@@ -1008,46 +1017,56 @@ class ActionSpe{
 class Parametre implements ActionListener{
     int nbJoueurs;
     ArrayList<String> names;
+    ArrayList<String> roles;
     JTextField field1;
     JTextField field2;
     JTextField field3;
     JTextField field4;
+    JTextField r1;
+    JTextField r2;
+    JTextField r3;
+    JTextField r4;
 
 
     public Parametre(){
         int n;
-        /**
-         * JFrame framParam = new JFrame("Parameters");
-        framParam.setSize(new Dimension(400,120));
-        JLabel labelNb= new JLabel("Nombre de joueurs : ");
-        framParam.add(labelNb);
-        fieldNbPlayers=new JTextField(20);
-        framParam.add(fieldNbPlayers);
-        JButton suivantNbPlayers=new JButton("Next");
-        framParam.add(suivantNbPlayers);
-        framParam.setLayout(new FlowLayout());
-        suivantNbPlayers.addActionListener(this);
-        framParam.setVisible(true);
-         **/
         names=new ArrayList<>();
+        roles=new ArrayList<>();
         JFrame framParam = new JFrame("Parameters");
-        framParam.setSize(new Dimension(400,200));
+        framParam.setSize(new Dimension(400,400));
         JLabel label1= new JLabel("Nom player 1");
         JLabel labe2= new JLabel("Nom player 2");
         JLabel label3= new JLabel("Nom player 3");
         JLabel label4= new JLabel("Nom player 4");
+        JLabel role1= new JLabel("Role player 1:");
+        JLabel role2= new JLabel("Role player 2:");
+        JLabel role3= new JLabel("Role player 3:");
+        JLabel role4= new JLabel("Role player 4:");
         framParam.add(label1);
         field1=new JTextField(20);
         field2=new JTextField(20);
         field3=new JTextField(20);
         field4=new JTextField(20);
+
+        r1=new JTextField(20);
+        r2=new JTextField(20);
+        r3=new JTextField(20);
+        r4=new JTextField(20);
         framParam.add(field1);
+        framParam.add(role1);
+        framParam.add(r1);
         framParam.add(labe2);
         framParam.add(field2);
+        framParam.add(role2);
+        framParam.add(r2);
         framParam.add(label3);
         framParam.add(field3);
+        framParam.add(role3);
+        framParam.add(r3);
         framParam.add(label4);
         framParam.add(field4);
+        framParam.add(role4);
+        framParam.add(r4);
         JButton suivantNbPlayers=new JButton("Finish");
         framParam.add(suivantNbPlayers);
         framParam.setLayout(new FlowLayout());
@@ -1076,6 +1095,10 @@ class Parametre implements ActionListener{
             if(!field4.getText().equals("")){
                 names.add(field4.getText());
             }
+            roles.add(r1.getText().toLowerCase());
+            roles.add(r2.getText().toLowerCase());
+            roles.add(r3.getText().toLowerCase());
+            roles.add(r4.getText().toLowerCase());
         }
     }
 }

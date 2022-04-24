@@ -11,9 +11,11 @@ Le 10.4 ;
 
 Il y a en plus une interface graphique ressemblante au jeux d'origine
 
+
 Architecture : 
 
-Ci joint le diagramme UML des classes 
+Voir le diagramme UML des classes 
+
 
 Problèmes rencontrés :
 Difficulté a mettre en place une interface fonctionnelle au début (Résolue)
