@@ -3,15 +3,17 @@ ATTENTION la version fonctionelle se situe dans la branche role , le dernier com
 L'intégralité du code a été produit par Héloïse BIEDER (projet fait seule).
 
 
-Les parties traités sont = 
+Les parties traitées sont = 
 
-Le 10.2
-Le 10.3
-Le 10.4 ;
-	- échange de clés
-	- objets spéciaux sacs de sables et hélicoptère
+	Le 10.2
+	Le 10.3
+	Le 10.4 ;
+		- échange de clés
+		- objets spéciaux sacs de sables et hélicoptère
 
-Il y a en plus une interface graphique ressemblante au jeux d'origine
+	-Il y a en plus une interface graphique ressemblante au jeux d'origine
+	-une interface de début de jeux pour demander les pseudo des joueurs
+	
 
 Architecture : 
 
