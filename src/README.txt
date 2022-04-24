@@ -1,3 +1,5 @@
+ATTENTION la version fonctionelle se situe dans la branche role , le dernier commit dans la branche main est une version ou seul le role de plongeur fonctionne
+
 L'intégralité du code a été produit par Héloïse BIEDER (projet fait seule).
 
 
