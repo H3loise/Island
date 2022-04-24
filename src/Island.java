@@ -71,6 +71,7 @@ public static final int tailleGrille=6;
                 case 0:
                     players.add(new Player(0,0,names.get(i),this));
                     //players.get(0).inventaireArtefact.add(new Artefact("Feu"));
+                    //players.get(0).inventaireActionSpe.add(new ActionSpe("Sable"));
                     break;
                 case 1:
                     players.add(new Player(5,0,names.get(i),this));
@@ -297,6 +298,7 @@ class Case{
     private int etat;
     private final int x,y;
     String special;
+    String ActionSpe;
 
     public Case(Modele modele, int x, int y){
         this.modele=modele;
@@ -304,10 +306,23 @@ class Case{
         this.x=x;
         this.y=y;
         this.special=new String("None");
+        this.ActionSpe=new String("None");
     }
 
     public void setSpecial(String s){
         this.special=s;
+    }
+
+    public void putSand(){
+        this.ActionSpe="Sable";
+    }
+
+    public void putHelico(){
+        this.ActionSpe="Helico";
+    }
+
+    public void putNone(){
+        this.ActionSpe="None";
     }
 
     public int getEtat(){
@@ -522,6 +537,8 @@ class VueCommandes extends JPanel{
         this.modele=modele;
         Dimension d = new Dimension(450,450);
         this.setPreferredSize(d);
+        JPanel p=new JPanel();
+        p.setLayout(null);
         JButton buttonAvance = new JButton("fin de tour");
         this.add(buttonAvance);
         Controleur ctrl = new Controleur(modele);
@@ -550,6 +567,33 @@ class VueCommandes extends JPanel{
         JButton cle = new JButton("Cle");
         this.add(cle);
         cle.addActionListener(ctrl);
+        JLabel playerdon = new JLabel("nom player");
+        JLabel cartedon=new JLabel("carte ");
+        JTextField playerC =new JTextField(10);
+        JTextField carte = new JTextField(10);
+        JLabel sablex = new JLabel("x sable");
+        JLabel sabley=new JLabel("y sable");
+        JTextField xsable =new JTextField(5);
+        JTextField ysable = new JTextField(5);
+        ctrl.xSable=xsable;
+        ctrl.ySable=ysable;
+        ctrl.carte=carte;
+        ctrl.player=playerC;
+        this.add(playerdon);
+        this.add(playerC);
+        this.add(cartedon);
+        this.add(carte);
+        JButton echange = new JButton("Echange");
+        echange.setBounds(10,250,10,10);
+        this.add(echange);
+        echange.addActionListener(ctrl);
+        this.add(sablex);
+        this.add(xsable);
+        this.add(sabley);
+        this.add(ysable);
+        JButton sable = new JButton("Sable");
+        this.add(sable);
+        sable.addActionListener(ctrl);
 
     }
 }
@@ -575,14 +619,44 @@ class VueInfo extends JPanel implements Observer{
 class Controleur implements ActionListener {
     Modele modele;
     boolean assecher;
+    boolean sable;
+    JTextField carte;
+    JTextField player;
+    JTextField xSable;
+    JTextField ySable;
 
     public Controleur(Modele modele){
         this.modele=modele;
         this.assecher=false;
+        this.sable=false;;
     }
 
     public void actionPerformed(ActionEvent e){
         //System.out.println("nombre de coups restant : "+this.modele.playerRound.nbLeft);
+        if(e.getActionCommand().equals("Sable")){
+            if(this.modele.getCase(Integer.valueOf(xSable.getText()),Integer.valueOf(ySable.getText())).canBeDried() && this.modele.playerRound.isInInventory("Sable")){
+                System.out.println("can be dried");
+                this.modele.getCase(Integer.valueOf(xSable.getText()),Integer.valueOf(ySable.getText())).seche();
+                this.modele.playerRound.UseActionSpe("Sable");
+            }
+        }
+
+        if(e.getActionCommand().equals("Echange")){
+
+            //while(echange.carte.equals("")){
+
+            //}
+            for(int i=0;i<this.modele.players.size();i++){
+                if(this.modele.players.get(i).nom.equals(player.getText()) && this.modele.playerRound.x==this.modele.players.get(i).x && this.modele.playerRound.y==this.modele.players.get(i).y){
+                    System.out.println("meme case ");
+                    if(this.modele.playerRound.isInKeys(carte.getText())){
+                        this.modele.playerRound.giveCle(carte.getText());
+                        this.modele.players.get(i).getCle(carte.getText());
+                    }
+                }
+            }
+        }
+
         if(e.getActionCommand().equals("Assecher")){
             this.assecher=true;
             this.modele.playerRound.nbLeft++;
@@ -696,6 +770,38 @@ class Player{
             }
         }this.inventaireCle.remove(index);
         this.addArtefact(new Artefact(type));
+    }
+
+    public void giveCle(String type){
+        int index=-1;
+        for(int i=0;i<this.inventaireCle.size();i++){
+            if(this.inventaireCle.get(i).type.equals(type)){
+                index=i;
+            }
+        }this.inventaireCle.remove(index);
+    }
+
+
+    public boolean isInInventory(String type){
+        for(int i=0;i<this.inventaireActionSpe.size();i++){
+            if(this.inventaireActionSpe.get(i).type.equals(type)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void UseActionSpe(String type){
+        int index=-1;
+        for(int i=0;i<this.inventaireActionSpe.size();i++){
+            if(this.inventaireActionSpe.get(i).type.equals(type)){
+                index=i;
+            }
+        }this.inventaireActionSpe.remove(index);
+    }
+
+    public void getCle(String s){
+        this.inventaireCle.add(new Cle(s));
     }
 
     /**public ArrayList<Case> Dryable(){
@@ -828,6 +934,50 @@ class Parametre implements ActionListener{
             }
             if(!field4.getText().equals("")){
                 names.add(field4.getText());
+            }
+        }
+    }
+}
+
+
+
+class Exchange implements ActionListener{
+    JTextField fieldP;
+    JTextField fieldC;
+    String player;
+    String carte;
+
+
+    public Exchange(){
+        JFrame framParam = new JFrame("Parameters");
+        framParam.setSize(new Dimension(340,150));
+        JLabel Player= new JLabel("Nom player ");
+        JLabel Carte= new JLabel("Carte");
+        framParam.add(Player);
+        fieldC=new JTextField(20);
+        fieldP=new JTextField(20);
+        framParam.add(fieldP);
+        framParam.add(Carte);
+        framParam.add(fieldC);
+        JButton finish=new JButton("Finish");
+        framParam.add(finish);
+        framParam.setLayout(new FlowLayout());
+        finish.addActionListener(this);
+        framParam.setVisible(true);
+        carte="";
+        //while(carte.equals("")){
+            //System.out.println("lall");
+        //}// boucle pour empecher le jeux de se lancer si nb players <2
+
+
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if(e.getActionCommand().equals("Finish")){
+            if(!fieldC.getText().equals("") && !fieldP.getText().equals("")) {
+                carte=fieldC.getText();
+                player=fieldP.getText();
             }
         }
     }
