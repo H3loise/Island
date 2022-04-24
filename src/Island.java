@@ -61,9 +61,11 @@ public static final int tailleGrille=6;
     int xHelico;
     int yHelico;
     ArrayList<Player> players;
+    boolean lost;
 
     public Modele(ArrayList<String> names){
         cases=new Case[tailleGrille][tailleGrille];
+        lost=false;
         innondables=new ArrayList<>();
         players = new ArrayList<>();
         for(int i=0;i<names.size();i++){
@@ -177,6 +179,34 @@ public static final int tailleGrille=6;
             if(feu>0 && eau>0 && terre>0 && air>0){
                 return true;
             }
+        return false;
+    }
+
+
+    public boolean loose(){
+        if(this.lost){
+            return true;
+        }
+
+        if(this.getCase(xHelico,yHelico).getEtat()==2){
+            return true;
+        }
+        for(int i=0;i<this.players.size();i++){
+            ArrayList<Boolean> parPlayer=new ArrayList<Boolean>();
+            if (this.players.get(i).x>0 && this.getCase(this.players.get(i).x-1,this.players.get(i).y).getEtat()!=2) {
+                parPlayer.add(false);
+            }
+            if (this.players.get(i).x<tailleGrille-1 && this.getCase(this.players.get(i).x+1,this.players.get(i).y).getEtat()!=2){
+                parPlayer.add(false);
+            }if (this.players.get(i).y>0 && this.getCase(this.players.get(i).x,this.players.get(i).y-1).getEtat()!=2){
+                parPlayer.add(false);
+            }if (this.players.get(i).y<tailleGrille-1 && this.getCase(this.players.get(i).x,this.players.get(i).y+1).getEtat()!=2){
+                parPlayer.add(false);
+            }
+            if(!parPlayer.contains(false)){
+                return true;
+            }
+        }
         return false;
     }
 
@@ -412,119 +442,125 @@ class VueCarte extends JPanel implements Observer{
     }
 
     private void paint(Graphics g, Case c, int x, int y) {
-        if (this.modele.won()) {
+        if (this.modele.loose()) {
             g.setColor(Color.BLACK);
-            g.drawString("Vous avez gagné ! ",225,255);
+            g.drawString("Vous avez perdu ! ", 225, 255);
         } else {
-            switch (c.getEtat()) {
-                case 0:
-                    g.setColor(Color.WHITE);
-                    break;
-                case 1:
-                    g.setColor(Color.CYAN);
-                    break;
-                case 2:
-                    g.setColor(Color.BLUE);
-                    break;
-            }
-            g.fillRect(x, y, Taille, Taille);
-            if (!c.special.equals("None")) {
-                switch (c.special) {
-                    case "Feu":
-                        g.setColor(Color.RED);
+            if (this.modele.won()) {
+                g.setColor(Color.BLACK);
+                g.drawString("Vous avez gagné ! ", 225, 255);
+            } else {
+                switch (c.getEtat()) {
+                    case 0:
+                        g.setColor(Color.WHITE);
                         break;
-                    case "Eau":
+                    case 1:
+                        g.setColor(Color.CYAN);
+                        break;
+                    case 2:
                         g.setColor(Color.BLUE);
                         break;
-                    case "Terre":
-                        g.setColor(Color.GREEN);
-                        break;
-                    case "Air":
-                        g.setColor(Color.LIGHT_GRAY);
-                        break;
-                    case "Helico":
-                        g.setColor(Color.BLACK);
-                        break;
                 }
-                g.fillRect(x, y, Taille / 4, Taille / 4);
-            }
+                g.fillRect(x, y, Taille, Taille);
+                if (!c.special.equals("None")) {
+                    switch (c.special) {
+                        case "Feu":
+                            g.setColor(Color.RED);
+                            break;
+                        case "Eau":
+                            g.setColor(Color.BLUE);
+                            break;
+                        case "Terre":
+                            g.setColor(Color.GREEN);
+                            break;
+                        case "Air":
+                            g.setColor(Color.LIGHT_GRAY);
+                            break;
+                        case "Helico":
+                            g.setColor(Color.BLACK);
+                            break;
+                    }
+                    g.fillRect(x, y, Taille / 4, Taille / 4);
+                }
 
-            if (c.getX() == this.modele.players.get(0).x && c.getY() == this.modele.players.get(0).y) {
-                g.setColor(Color.YELLOW);
-                g.fillOval(x, y, Taille, Taille);
-            }
-            if (c.getX() == this.modele.players.get(1).x && c.getY() == this.modele.players.get(1).y) {
-                g.setColor(Color.RED);
-                g.fillOval(x, y, Taille, Taille);
-            }
-            if (this.modele.players.size() > 2) {
-                if (c.getX() == this.modele.players.get(2).x && c.getY() == this.modele.players.get(2).y) {
-                    g.setColor(Color.GREEN);
+                if (c.getX() == this.modele.players.get(0).x && c.getY() == this.modele.players.get(0).y) {
+                    g.setColor(Color.YELLOW);
                     g.fillOval(x, y, Taille, Taille);
                 }
-            }
-            if (this.modele.players.size() > 3) {
-                if (c.getX() == this.modele.players.get(3).x && c.getY() == this.modele.players.get(3).y) {
-                    g.setColor(Color.MAGENTA);
+                if (c.getX() == this.modele.players.get(1).x && c.getY() == this.modele.players.get(1).y) {
+                    g.setColor(Color.RED);
                     g.fillOval(x, y, Taille, Taille);
                 }
-            }
-            g.setColor(Color.BLACK);
-            g.drawString(this.modele.playerRound.nom, 260, 20);
-            g.drawString("move left :" + this.modele.playerRound.nbLeft, 260, 40);
-            g.drawString("clés : ", 260, 60);
-            for (int i = 0; i < this.modele.playerRound.inventaireCle.size(); i++) {
-                switch (this.modele.playerRound.inventaireCle.get(i).type) {
-                    case "Feu":
-                        g.setColor(Color.RED);
-                        g.fillRect(260 + 40 + i * 25, 45, 20, 20);
-                        break;
-                    case "Eau":
-                        g.setColor(Color.BLUE);
-                        g.fillRect(260 + 40 + i * 25, 45, 20, 20);
-                        break;
-                    case "Terre":
+                if (this.modele.players.size() > 2) {
+                    if (c.getX() == this.modele.players.get(2).x && c.getY() == this.modele.players.get(2).y) {
                         g.setColor(Color.GREEN);
-                        g.fillRect(260 + 40 + i * 25, 45, 20, 20);
-                        break;
-                    case "Air":
-                        g.setColor(Color.LIGHT_GRAY);
-                        g.fillRect(260 + 40 + i * 25, 45, 20, 20);
-                        break;
+                        g.fillOval(x, y, Taille, Taille);
+                    }
                 }
-            }
-            g.setColor(Color.BLACK);
-            g.drawString("artefact :", 260, 80);
-            for (int i = 0; i < this.modele.playerRound.inventaireArtefact.size(); i++) {
-                switch (this.modele.playerRound.inventaireArtefact.get(i).type) {
-                    case "Feu":
-                        g.setColor(Color.RED);
-                        g.fillRect(260 + 60 + i * 25, 70, 20, 20);
-                        break;
-                    case "Eau":
-                        g.setColor(Color.BLUE);
-                        g.fillRect(260 + 60 + i * 25, 70, 20, 20);
-                        break;
-                    case "Terre":
-                        g.setColor(Color.GREEN);
-                        g.fillRect(260 + 60 + i * 25, 70, 20, 20);
-                        break;
-                    case "Air":
-                        g.setColor(Color.LIGHT_GRAY);
-                        g.fillRect(260 + 60 + i * 25, 70, 20, 20);
-                        break;
+                if (this.modele.players.size() > 3) {
+                    if (c.getX() == this.modele.players.get(3).x && c.getY() == this.modele.players.get(3).y) {
+                        g.setColor(Color.MAGENTA);
+                        g.fillOval(x, y, Taille, Taille);
+                    }
                 }
-            }g.drawString("inventaire :",260,100);
-            for (int i = 0; i < this.modele.playerRound.inventaireActionSpe.size(); i++) {
-                switch (this.modele.playerRound.inventaireActionSpe.get(i).type){
-                    case "Helico":
-                        g.setColor(Color.BLACK);
-                        g.fillRect(260+80+i*25,90,20,20);
-                        break;
-                    case "Sable":
-                        g.setColor(Color.YELLOW);
-                        g.fillRect(260+80+i*25,90,20,20);
-                        break;
+                g.setColor(Color.BLACK);
+                g.drawString(this.modele.playerRound.nom, 260, 20);
+                g.drawString("move left :" + this.modele.playerRound.nbLeft, 260, 40);
+                g.drawString("clés : ", 260, 60);
+                for (int i = 0; i < this.modele.playerRound.inventaireCle.size(); i++) {
+                    switch (this.modele.playerRound.inventaireCle.get(i).type) {
+                        case "Feu":
+                            g.setColor(Color.RED);
+                            g.fillRect(260 + 40 + i * 25, 45, 20, 20);
+                            break;
+                        case "Eau":
+                            g.setColor(Color.BLUE);
+                            g.fillRect(260 + 40 + i * 25, 45, 20, 20);
+                            break;
+                        case "Terre":
+                            g.setColor(Color.GREEN);
+                            g.fillRect(260 + 40 + i * 25, 45, 20, 20);
+                            break;
+                        case "Air":
+                            g.setColor(Color.LIGHT_GRAY);
+                            g.fillRect(260 + 40 + i * 25, 45, 20, 20);
+                            break;
+                    }
+                }
+                g.setColor(Color.BLACK);
+                g.drawString("artefact :", 260, 80);
+                for (int i = 0; i < this.modele.playerRound.inventaireArtefact.size(); i++) {
+                    switch (this.modele.playerRound.inventaireArtefact.get(i).type) {
+                        case "Feu":
+                            g.setColor(Color.RED);
+                            g.fillRect(260 + 60 + i * 25, 70, 20, 20);
+                            break;
+                        case "Eau":
+                            g.setColor(Color.BLUE);
+                            g.fillRect(260 + 60 + i * 25, 70, 20, 20);
+                            break;
+                        case "Terre":
+                            g.setColor(Color.GREEN);
+                            g.fillRect(260 + 60 + i * 25, 70, 20, 20);
+                            break;
+                        case "Air":
+                            g.setColor(Color.LIGHT_GRAY);
+                            g.fillRect(260 + 60 + i * 25, 70, 20, 20);
+                            break;
+                    }
+                }
+                g.drawString("inventaire :", 260, 100);
+                for (int i = 0; i < this.modele.playerRound.inventaireActionSpe.size(); i++) {
+                    switch (this.modele.playerRound.inventaireActionSpe.get(i).type) {
+                        case "Helico":
+                            g.setColor(Color.BLACK);
+                            g.fillRect(260 + 80 + i * 25, 90, 20, 20);
+                            break;
+                        case "Sable":
+                            g.setColor(Color.YELLOW);
+                            g.fillRect(260 + 80 + i * 25, 90, 20, 20);
+                            break;
+                    }
                 }
             }
         }
@@ -654,55 +690,60 @@ class Controleur implements ActionListener {
 
     public void actionPerformed(ActionEvent e){
         //System.out.println("nombre de coups restant : "+this.modele.playerRound.nbLeft);
-        if(e.getActionCommand().equals("Sable")){
-            if(this.modele.getCase(Integer.valueOf(xSable.getText()),Integer.valueOf(ySable.getText())).canBeDried() && this.modele.playerRound.isInInventory("Sable")){
-                System.out.println("can be dried");
-                this.modele.getCase(Integer.valueOf(xSable.getText()),Integer.valueOf(ySable.getText())).seche();
-                this.modele.playerRound.UseActionSpe("Sable");
-            }
+        if(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).getEtat()==2 && this.modele.playerRound.nbLeft==0){
+            this.modele.lost=true;
         }
 
-        if(e.getActionCommand().equals("Helico")){
-            if(this.modele.playerRound.isInInventory("Helico") && this.modele.getCase(Integer.valueOf(xHelico.getText()),Integer.valueOf(yHelico.getText())).canBeDried()){
-                if(box.isSelected()){
-                    System.out.println("select");
-                    int x=modele.playerRound.x;
-                    int y=modele.playerRound.y;
-                    for(int i=0;i<this.modele.players.size();i++){
-                        System.out.println("("+modele.players.get(i).x+modele.players.get(i).y+")  "+"("+modele.playerRound.x+modele.playerRound.y+")");
-                        if(this.modele.players.get(i).x==x && this.modele.players.get(i).y==y){
-                            System.out.println("dans la boucle");
-                            this.modele.players.get(i).x=Integer.valueOf(xHelico.getText());
-                            this.modele.players.get(i).y=Integer.valueOf(yHelico.getText());
+        if(this.modele.playerRound.nbLeft>0 && !e.getActionCommand().equals("fin de tour")) {
+            if(e.getActionCommand().equals("Sable")){
+                if(this.modele.getCase(Integer.valueOf(xSable.getText()),Integer.valueOf(ySable.getText())).canBeDried() && this.modele.playerRound.isInInventory("Sable")){
+                    System.out.println("can be dried");
+                    this.modele.getCase(Integer.valueOf(xSable.getText()),Integer.valueOf(ySable.getText())).seche();
+                    this.modele.playerRound.UseActionSpe("Sable");
+                }
+            }
+
+            if(e.getActionCommand().equals("Helico")){
+                if(this.modele.playerRound.isInInventory("Helico") && this.modele.getCase(Integer.valueOf(xHelico.getText()),Integer.valueOf(yHelico.getText())).canBeDried()){
+                    if(box.isSelected()){
+                        System.out.println("select");
+                        int x=modele.playerRound.x;
+                        int y=modele.playerRound.y;
+                        for(int i=0;i<this.modele.players.size();i++){
+                            System.out.println("("+modele.players.get(i).x+modele.players.get(i).y+")  "+"("+modele.playerRound.x+modele.playerRound.y+")");
+                            if(this.modele.players.get(i).x==x && this.modele.players.get(i).y==y){
+                                System.out.println("dans la boucle");
+                                this.modele.players.get(i).x=Integer.valueOf(xHelico.getText());
+                                this.modele.players.get(i).y=Integer.valueOf(yHelico.getText());
+                            }
+                        }
+                    }else{
+                        this.modele.playerRound.x=Integer.valueOf(xHelico.getText());
+                        this.modele.playerRound.y=Integer.valueOf(yHelico.getText());
+                    }
+                    this.modele.playerRound.UseActionSpe("Helico");
+                }else{
+                    this.modele.playerRound.nbLeft++;
+                }
+            }
+
+            if(e.getActionCommand().equals("Echange")){
+                for(int i=0;i<this.modele.players.size();i++){
+                    if(this.modele.players.get(i).nom.equals(player.getText()) && this.modele.playerRound.x==this.modele.players.get(i).x && this.modele.playerRound.y==this.modele.players.get(i).y){
+                        System.out.println("meme case ");
+                        if(this.modele.playerRound.isInKeys(carte.getText())){
+                            this.modele.playerRound.giveCle(carte.getText());
+                            this.modele.players.get(i).getCle(carte.getText());
                         }
                     }
-                }else{
-                    this.modele.playerRound.x=Integer.valueOf(xHelico.getText());
-                    this.modele.playerRound.y=Integer.valueOf(yHelico.getText());
                 }
-                this.modele.playerRound.UseActionSpe("Helico");
-            }else{
+            }
+
+            if(e.getActionCommand().equals("Assecher")){
+                this.assecher=true;
                 this.modele.playerRound.nbLeft++;
             }
-        }
 
-        if(e.getActionCommand().equals("Echange")){
-            for(int i=0;i<this.modele.players.size();i++){
-                if(this.modele.players.get(i).nom.equals(player.getText()) && this.modele.playerRound.x==this.modele.players.get(i).x && this.modele.playerRound.y==this.modele.players.get(i).y){
-                    System.out.println("meme case ");
-                    if(this.modele.playerRound.isInKeys(carte.getText())){
-                        this.modele.playerRound.giveCle(carte.getText());
-                        this.modele.players.get(i).getCle(carte.getText());
-                    }
-                }
-            }
-        }
-
-        if(e.getActionCommand().equals("Assecher")){
-            this.assecher=true;
-            this.modele.playerRound.nbLeft++;
-        }
-        if(this.modele.playerRound.nbLeft>0 && !e.getActionCommand().equals("fin de tour")) {
             if (e.getActionCommand().equals(">")) {
                 if(assecher && this.modele.playerRound.Dryable(this.modele.playerRound.x+1,this.modele.playerRound.y)){
                     this.modele.getCase(this.modele.playerRound.x+1,this.modele.playerRound.y).seche();
