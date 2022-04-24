@@ -404,10 +404,14 @@ class Vue{
         frame=new JFrame();
         frame.setTitle("Forbidden Island");
         frame.setLayout(new FlowLayout());
+        //frame.setLayout(new BorderLayout());
+        JLabel background=new JLabel(new ImageIcon(this.getClass().getResource("Images/background.png")));
+        background.setLayout(new FlowLayout());
+        frame.add(background);
         carte=new VueCarte(modele);
-        frame.add(carte);
+        background.add(carte);
         commandes=new VueCommandes(modele);
-        frame.add(commandes);
+        background.add(commandes);
         //info=new VueInfo(modele);
         //frame.add(info);
         frame.pack();
@@ -422,9 +426,10 @@ class VueCarte extends JPanel implements Observer{
 
     public VueCarte(Modele modele){
         this.modele=modele;
+        this.setOpaque(false);
         modele.addObserver(this);
         //this.setPreferredSize(Taille*Modele.tailleGrille,Taille*Modele.tailleGrille);
-        Dimension d = new Dimension(450,450);
+        Dimension d = new Dimension(450,350);
         this.setPreferredSize(d);
     }
 
@@ -443,11 +448,11 @@ class VueCarte extends JPanel implements Observer{
 
     private void paint(Graphics g, Case c, int x, int y) {
         if (this.modele.loose()) {
-            g.setColor(Color.BLACK);
+            g.setColor(Color.WHITE);
             g.drawString("Vous avez perdu ! ", 225, 255);
         } else {
             if (this.modele.won()) {
-                g.setColor(Color.BLACK);
+                g.setColor(Color.WHITE);
                 g.drawString("Vous avez gagné ! ", 225, 255);
             } else {
                 switch (c.getEtat()) {
@@ -503,7 +508,7 @@ class VueCarte extends JPanel implements Observer{
                         g.fillOval(x, y, Taille, Taille);
                     }
                 }
-                g.setColor(Color.BLACK);
+                g.setColor(Color.WHITE);
                 g.drawString(this.modele.playerRound.nom, 260, 20);
                 g.drawString("move left :" + this.modele.playerRound.nbLeft, 260, 40);
                 g.drawString("clés : ", 260, 60);
@@ -527,7 +532,7 @@ class VueCarte extends JPanel implements Observer{
                             break;
                     }
                 }
-                g.setColor(Color.BLACK);
+                g.setColor(Color.WHITE);
                 g.drawString("artefact :", 260, 80);
                 for (int i = 0; i < this.modele.playerRound.inventaireArtefact.size(); i++) {
                     switch (this.modele.playerRound.inventaireArtefact.get(i).type) {
@@ -571,8 +576,10 @@ class VueCommandes extends JPanel{
     private Modele modele;
 
     public VueCommandes(Modele modele){
+        this.setOpaque(false);
+        //this.setBackground(new Color(0,0,0,125));
         this.modele=modele;
-        Dimension d = new Dimension(450,450);
+        Dimension d = new Dimension(450,350);
         this.setPreferredSize(d);
         JPanel p=new JPanel();
         p.setLayout(null);
@@ -605,11 +612,15 @@ class VueCommandes extends JPanel{
         this.add(cle);
         cle.addActionListener(ctrl);
         JLabel playerdon = new JLabel("nom player");
+        playerdon.setForeground(Color.WHITE);
         JLabel cartedon=new JLabel("carte ");
+        cartedon.setForeground(Color.WHITE);
         JTextField playerC =new JTextField(10);
         JTextField carte = new JTextField(10);
         JLabel sablex = new JLabel("x sable");
+        sablex.setForeground(Color.WHITE);
         JLabel sabley=new JLabel("y sable");
+        sabley.setForeground(Color.WHITE);
         JTextField xsable =new JTextField(8);
         JTextField ysable = new JTextField(8);
         ctrl.xSable=xsable;
@@ -634,10 +645,13 @@ class VueCommandes extends JPanel{
         JLabel helicox=new JLabel("x helico");
         JLabel helicoy = new JLabel("y helico");
         JTextField xhelico =new JTextField(5);
+        xhelico.setForeground(Color.WHITE);
         JTextField yhelico= new JTextField(5);
+        yhelico.setForeground(Color.WHITE);
         ctrl.xHelico=xhelico;
         ctrl.yHelico=yhelico;
         JCheckBox people = new JCheckBox("prendre les autres");
+        people.setForeground(Color.WHITE);
         ctrl.box=people;
         this.add(helicox);
         this.add(xhelico);
@@ -801,6 +815,9 @@ class Controleur implements ActionListener {
             modele.playerRound.removeLeft();
         }else{
             if (e.getActionCommand().equals("fin de tour")) {
+                if(this.modele.getCase(this.modele.playerRound.x,this.modele.playerRound.y).getEtat()==2){
+                    this.modele.lost=true;
+                }
                 this.modele.getCle();
                 this.modele.innonde();
                 this.modele.playerRound.nbLeft=3;
@@ -811,14 +828,14 @@ class Controleur implements ActionListener {
 }
 
 class Player{
-    Modele modele;
-    int x;
-    int y;
-    String nom;
-    int nbLeft;
-    ArrayList<Artefact> inventaireArtefact;
-    ArrayList<Cle> inventaireCle;
-    ArrayList<ActionSpe> inventaireActionSpe;
+    public Modele modele;
+    public int x;
+    public int y;
+    public String nom;
+    public int nbLeft;
+    public ArrayList<Artefact> inventaireArtefact;
+    public ArrayList<Cle> inventaireCle;
+    public ArrayList<ActionSpe> inventaireActionSpe;
     public Player(int x, int y, String nom, Modele modele){
         this.modele=modele;
         this.x=x;
