@@ -196,6 +196,10 @@ Images images;
         if(this.getCase(xHelico,yHelico).getEtat()==2){
             return true;
         }
+        if(this.playerRound.isInInventory("Helico") && this.playerRound.nbLeft>0){
+            return false;
+        }
+
         for(int i=0;i<this.players.size();i++){
             ArrayList<Boolean> parPlayer=new ArrayList<Boolean>();
             if (this.players.get(i).x>0 && this.getCase(this.players.get(i).x-1,this.players.get(i).y).getEtat()!=2) {
@@ -508,25 +512,41 @@ class VueCarte extends JPanel implements Observer{
                 if (c.getX() == this.modele.players.get(0).x && c.getY() == this.modele.players.get(0).y) {
                     //g.setColor(Color.YELLOW);
                     //g.fillOval(x, y, Taille, Taille);
-                    g.drawImage(this.modele.images.Jaune,x,y,Taille-10,Taille-10,null);
+                    if(this.modele.players.get(0).equals(this.modele.playerRound)){
+                        g.drawImage(this.modele.images.JauneSelect,x,y,Taille-10,Taille-10,null);
+                    }else {
+                        g.drawImage(this.modele.images.Jaune, x, y, Taille - 10, Taille - 10, null);
+                    }
                 }
                 if (c.getX() == this.modele.players.get(1).x && c.getY() == this.modele.players.get(1).y) {
                     //g.setColor(Color.RED);
                     //g.fillOval(x, y, Taille, Taille);
-                    g.drawImage(this.modele.images.Rouge,x,y,Taille-10,Taille-10,null);
+                    if(this.modele.players.get(1).equals(this.modele.playerRound)){
+                        g.drawImage(this.modele.images.BlancSelect,x,y,Taille-10,Taille-10,null);
+                    }else {
+                        g.drawImage(this.modele.images.Blanc, x, y, Taille - 10, Taille - 10, null);
+                    }
                 }
                 if (this.modele.players.size() > 2) {
                     if (c.getX() == this.modele.players.get(2).x && c.getY() == this.modele.players.get(2).y) {
                         //g.setColor(Color.GREEN);
                         //g.fillOval(x, y, Taille, Taille);
-                        g.drawImage(this.modele.images.Vert,x,y,Taille-10,Taille-10,null);
+                        if(this.modele.players.get(2).equals(this.modele.playerRound)){
+                            g.drawImage(this.modele.images.VertSelect,x,y,Taille-10,Taille-10,null);
+                        }else {
+                            g.drawImage(this.modele.images.Vert, x, y, Taille - 10, Taille - 10, null);
+                        }
                     }
                 }
                 if (this.modele.players.size() > 3) {
                     if (c.getX() == this.modele.players.get(3).x && c.getY() == this.modele.players.get(3).y) {
                         //g.setColor(Color.MAGENTA);
                         //g.fillOval(x, y, Taille, Taille);
-                        g.drawImage(this.modele.images.Noir,x,y,Taille-10,Taille-10,null);
+                        if(this.modele.players.get(3).equals(this.modele.playerRound)){
+                            g.drawImage(this.modele.images.NoirSelect,x,y,Taille-10,Taille-10,null);
+                        }else {
+                            g.drawImage(this.modele.images.Noir, x, y, Taille - 10, Taille - 10, null);
+                        }
                     }
                 }
                 g.setColor(Color.WHITE);
@@ -1108,8 +1128,14 @@ class Exchange implements ActionListener{
 class Images {
     BufferedImage Jaune;
     BufferedImage Noir;
-    BufferedImage Rouge;
+    BufferedImage Blanc;
     BufferedImage Vert;
+
+    BufferedImage JauneSelect;
+    BufferedImage NoirSelect;
+    BufferedImage BlancSelect;
+    BufferedImage VertSelect;
+
     BufferedImage Feu;
     BufferedImage Eau;
     BufferedImage Terre;
@@ -1128,18 +1154,26 @@ class Images {
     public Images(){
         this.Jaune=ChargeImage("Jaune");
         this.Noir=ChargeImage("Noir");
-        this.Rouge=ChargeImage("Rouge");
+        this.Blanc =ChargeImage("Blanc");
         this.Vert=ChargeImage("Vert");
+
+        this.JauneSelect=ChargeImage("JauneSelect");
+        this.NoirSelect=ChargeImage("NoirSelect");
+        this.VertSelect=ChargeImage("VertSelect");
+        this.BlancSelect=ChargeImage("BlancSelect");
+
         this.Feu=ChargeImage("Feu");
         this.Eau=ChargeImage("Eau");
         this.Terre=ChargeImage("Terre");
         this.Air=ChargeImage("Air");
+
         this.Zone1=ChargeImage("Zone1");
         this.Zone2=ChargeImage("Zone2");
         this.Zone3=ChargeImage("Zone3");
         this.Zone4=ChargeImage("Zone4");
         this.Zone5=ChargeImage("Zone5");
         this.Zone6=ChargeImage("Zone6");
+
         this.Heliport=ChargeImage("Helico");
 
         zonesCarteseche=new ArrayList<>();
